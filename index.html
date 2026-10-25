@@ -1,0 +1,2295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Vendre · Super Sunday Lyon</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2318191B'/%3E%3Crect x='12' y='30' width='40' height='4' rx='2' fill='%23D4BF94'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* DA « Le Fil » : graphite, ivoire, champagne. Scène fixe 1920 x 1080 mise à l'échelle. */
+:root{
+  --graphite:#18191B; --graphite-deep:#121315; --surface:#222427; --surface-2:#2A2C30;
+  --line:rgba(238,232,220,.09); --line-2:rgba(238,232,220,.17);
+  --ivory:#EEE8DC; --ivory-2:#D3CCBE; --stone:#A7A196; --stone-2:#8A857C;
+  --champagne:#D4BF94; --ink:#16171A; --coral:#E3906F;
+  --sans:'Outfit',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--graphite);color:var(--ivory);font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}
+::selection{background:var(--champagne);color:var(--ink)}
+button{font:inherit;color:inherit;cursor:pointer}
+kbd{font:inherit;font-size:.82em;padding:.1em .45em;border:1px solid var(--line-2);border-radius:4px;color:var(--ivory)}
+
+/* ---------- Scène ---------- */
+.viewport{position:fixed;inset:0;overflow:hidden;background:var(--graphite)}
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:var(--graphite)}
+.halo-wrap{position:absolute;inset:0;pointer-events:none;will-change:transform}
+.fx-canvas{position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none}
+.halo{position:absolute;left:0;top:0;width:1800px;height:1800px;border-radius:50%;pointer-events:none;will-change:transform;
+  background:radial-gradient(closest-side,rgba(212,191,148,.10),rgba(212,191,148,.035) 46%,transparent 74%)}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* Les slides restent au-dessus des fils, même quand la secousse donne une transformation au deck */
+.deck{position:absolute;inset:0;z-index:2}
+.slide{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;padding:104px 120px 120px;visibility:hidden;opacity:0}
+.slide.is-active{visibility:visible}
+.notes{display:none}
+.fa{display:block;flex:none;width:var(--w,200px);height:3px}
+.fa.v{width:3px}
+
+/* Le fil : un seul trait qui voyage de slide en slide */
+.fil{position:absolute;left:0;top:0;z-index:4;pointer-events:none;will-change:transform,opacity}
+.fil i{position:absolute;left:0;top:-1.5px;width:1000px;height:3px;border-radius:2px;background:var(--champagne);transform-origin:0 50%;will-change:transform;
+  box-shadow:0 0 14px rgba(212,191,148,.35)}
+
+.foot{position:absolute;left:120px;right:120px;bottom:44px;z-index:3;display:flex;justify-content:space-between;font-size:20px;letter-spacing:.02em;color:var(--stone);pointer-events:none}
+.foot .f-r{font-variant-numeric:tabular-nums}
+
+/* ---------- Typographie ---------- */
+.eyebrow{display:block;align-self:flex-start;font-weight:600;font-size:24px;line-height:1;letter-spacing:.24em;text-transform:uppercase;color:var(--champagne);margin-bottom:28px}
+.t{font-weight:700;font-size:96px;line-height:.98;letter-spacing:-.01em;text-transform:uppercase;color:var(--ivory)}
+.t.s{font-size:84px}
+.t.m{font-size:78px}
+.t.xl{font-size:128px;line-height:.95}
+.ln{display:block;overflow:hidden;padding:.16em 0 .04em;margin:-.16em 0 -.04em}
+.lm{display:inline-block;overflow:hidden;padding:.16em 0 .04em;margin:-.16em 0 -.04em;vertical-align:top}
+.ln>span,.lm>span{display:inline-block}
+.lede{font-size:46px;line-height:1.3;color:var(--stone);text-wrap:balance}
+.closing{font-weight:500;font-size:44px;line-height:1.25;letter-spacing:-.01em;margin-top:34px;text-wrap:balance}
+.closing strong{font-weight:700}
+.hl{color:var(--champagne)}
+.w{display:inline-block}
+.lw{display:inline-block;transform-origin:0 100%}
+.ec{display:inline-block}
+/* Chiffres qui roulent : le masque découpe sans toucher à l'alignement sur la ligne de base */
+.roll{clip-path:inset(0 -0.3em)}
+.rl{display:inline-block}
+/* Reflet qui parcourt une ligne de tableau ou de liste à son apparition */
+.tr,.rules li,.toc li{position:relative}
+.scan{position:absolute;left:0;right:0;bottom:-1px;height:2px;opacity:0;pointer-events:none;transform-origin:0 50%;
+  background:linear-gradient(90deg,rgba(212,191,148,0),var(--champagne) 35%,rgba(238,232,220,.9) 65%,rgba(212,191,148,0))}
+.u{display:inline-flex;flex-direction:column}
+.u>.fa{width:100%;margin:4px 0 -7px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.card.grid-bg{background-color:transparent;border-color:var(--line-2);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px}
+.card.warm{border-color:rgba(212,191,148,.26);background:radial-gradient(120% 140% at 100% 0%,rgba(212,191,148,.16),transparent 62%),var(--surface-2)}
+.wipe{position:absolute;inset:0;border-radius:6px;background:var(--champagne);transform-origin:0 50%}
+.wipe-c{position:relative}
+
+/* ---------- Couverture ---------- */
+.s-cover{justify-content:center;padding-left:150px}
+.cover-word{font-weight:800;font-size:320px;line-height:.84;letter-spacing:-.04em;text-transform:uppercase;margin:4px 0 40px -14px}
+.cover-meta{margin-top:54px}
+.cover-names{font-size:46px;font-weight:500;letter-spacing:-.01em}
+.cover-date{font-size:28px;color:var(--stone);margin-top:12px}
+.cover-logo{position:absolute;right:140px;bottom:110px;z-index:1;width:200px;height:auto}
+.cover-word{position:relative}
+.ch{display:inline-block;transform-origin:0 100%}
+/* Reflet qui balaie VENDRE : une fenêtre qui avance, le texte qu'elle contient recule d'autant */
+.sweep{position:absolute;left:0;top:0;width:360px;height:100%;overflow:hidden;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 38%,#000 62%,transparent);mask-image:linear-gradient(90deg,transparent,#000 38%,#000 62%,transparent)}
+.sweep>.ln{width:max-content;color:#F7E9C8}
+.is-thumb .sweep{display:none}
+
+/* ---------- Sommaire : frise proportionnelle aux durées ---------- */
+.toc-bar{display:flex;gap:10px;margin-top:64px}
+.toc-bar span{position:relative;flex:var(--m) 1 0;height:6px;border-radius:3px;background:var(--line-2)}
+.toc-bar em{position:absolute;left:0;bottom:16px;font-style:normal;font-size:20px;letter-spacing:.1em;color:var(--stone);white-space:nowrap}
+.toc-bar .fa{position:absolute;left:0;top:1.5px;width:100%}
+.toc{margin-top:40px;border-top:1px solid var(--line-2);list-style:none}
+.toc li{display:grid;grid-template-columns:96px 1fr 200px 120px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+.toc b{font-weight:600;font-size:44px;color:var(--champagne);font-variant-numeric:tabular-nums}
+.toc-t{font-weight:600;font-size:42px;line-height:1.15;letter-spacing:-.01em}
+.toc-t small{display:block;margin-top:6px;font-weight:400;font-size:26px;letter-spacing:0;color:var(--stone)}
+.toc li[data-goto]{cursor:pointer}
+.toc-t{transition:color .2s ease}
+@media (hover:hover){.toc li[data-goto]:hover .toc-t{color:var(--champagne)}}
+.toc-who{font-size:30px;color:var(--ivory-2)}
+.toc-min{text-align:right;font-size:30px;color:var(--stone);font-variant-numeric:tabular-nums}
+
+/* ---------- CAB ---------- */
+.cab{display:grid;grid-template-columns:200px repeat(4,minmax(0,1fr));grid-template-rows:92px repeat(3,158px);gap:14px;margin-top:40px}
+.cab-h{display:flex;align-items:center;gap:16px;padding:0 26px;background:var(--surface);border:1px solid var(--line);border-radius:6px;font-weight:600;font-size:31px;letter-spacing:.02em;text-transform:uppercase}
+.cab-h svg{width:30px;height:30px;flex:none;fill:none;stroke:var(--champagne);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.cab-l{display:flex;flex-direction:column;justify-content:center;padding-left:6px}
+.cab-l b{font-weight:700;font-size:92px;line-height:.9;color:var(--champagne)}
+.cab-l>span{font-size:21px;color:var(--stone);margin-top:8px}
+.cab-l .fa{margin-top:14px;width:64px}
+.cab-c{position:relative;display:flex;align-items:center;padding:20px 26px;background:var(--surface);border:1px solid var(--line);border-radius:6px;font-size:28px;line-height:1.3}
+.cab-c.b{background:transparent;border-color:transparent;font-weight:600;color:var(--ink)}
+
+/* ---------- Développement personnel ---------- */
+.hook-l{font-weight:600;font-size:80px;line-height:1.1;letter-spacing:-.022em;margin-bottom:12px}
+.hook-l.last{max-width:1560px;margin-top:10px}
+.pill{display:inline-flex;align-items:center;justify-content:center;width:112px;height:62px;margin-left:28px;border:2px solid var(--champagne);border-radius:999px;vertical-align:.06em}
+.pill svg{width:38px;height:38px;fill:none;stroke:var(--champagne);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.vs{position:relative;margin-top:auto;display:grid;grid-template-columns:1fr 1fr;padding-top:44px}
+.vs>.fa{position:absolute;left:0;top:0;width:100%}
+.vs>div+div{padding-left:72px;margin-left:-1px;border-left:1px solid var(--line-2)}
+.vs>div:first-of-type{padding-right:72px}
+.vs-lab{display:block;font-weight:600;font-size:22px;letter-spacing:.2em;text-transform:uppercase;color:var(--stone);margin-bottom:16px}
+.vs-lab.hl{color:var(--champagne)}
+.vs p{font-size:42px;line-height:1.25}
+
+/* Trois réflexes, trois parades : le réflexe à gauche, ce qui se travaille à droite */
+.bands{display:grid;gap:16px;margin-top:40px}
+.band{position:relative;display:grid;grid-template-columns:90px minmax(0,1fr) minmax(0,1.15fr);align-items:center;min-height:150px;padding:22px 44px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.band-n{font-weight:700;font-size:64px;line-height:1;color:var(--champagne)}
+.band-ref{padding-right:36px;font-weight:600;font-size:42px;line-height:1.15;letter-spacing:-.01em}
+.band-trig{display:block;margin-bottom:6px;font-weight:400;font-size:28px;letter-spacing:0;color:var(--stone)}
+.band-fix{padding-left:40px;border-left:1px solid var(--line-2);font-size:32px;line-height:1.3;color:var(--ivory-2)}
+.band-fix span{display:block;margin-bottom:8px;font-weight:600;font-size:20px;letter-spacing:.2em;text-transform:uppercase;color:var(--champagne)}
+.band .fa{position:absolute;left:44px;bottom:20px;width:44px}
+
+/* ---------- Tu gagnes le débat ---------- */
+.court-wrap{display:grid;grid-template-columns:540px 1fr;gap:40px;align-items:center;margin-top:34px}
+.court-legend{display:grid;gap:30px;list-style:none}
+.court-legend li{display:grid;grid-template-columns:72px 1fr;align-items:center;gap:22px}
+.court-legend b{display:block;font-weight:600;font-size:40px}
+.court-legend em{display:block;margin-top:2px;font-style:normal;font-size:28px;color:var(--stone)}
+.lg-sw{display:block;justify-self:center;width:72px;height:4px;border-radius:2px}
+.lg-sw.plan{background:var(--stone-2)}
+.lg-sw.def{width:30px;height:30px;border:3px solid var(--ivory-2);border-radius:50%}
+.lg-sw.read{height:5px;background:var(--champagne)}
+.court{display:block;width:100%;height:340px;overflow:visible}
+.court .cl{fill:none;stroke:var(--line-2);stroke-width:2}
+.court .hoop{fill:none;stroke:var(--ivory-2);stroke-width:3}
+.court .me{fill:var(--ivory)}
+.court .plan{fill:none;stroke:var(--stone-2);stroke-width:3;stroke-linecap:round}
+.court .def circle{fill:var(--graphite);stroke:var(--ivory-2);stroke-width:3}
+.court .def path{fill:none;stroke:var(--ivory-2);stroke-width:3;stroke-linecap:round}
+.court .read{fill:none;stroke:var(--champagne);stroke-width:4.5;stroke-linecap:round}
+
+.viv{display:flex;align-items:baseline;gap:24px;margin-top:26px;font-size:32px;color:var(--ivory-2)}
+.viv b{flex:none;font-weight:600;font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--champagne)}
+
+.who{font-size:34px;color:var(--stone)}
+.thread{display:grid;gap:12px;margin-top:30px}
+.tb{position:relative;max-width:1320px;padding:16px 28px 24px;border-radius:6px;font-size:31px;line-height:1.3}
+.tb.them{justify-self:start;background:var(--surface);border:1px solid var(--line-2)}
+.tb.me{justify-self:end;text-align:right;border:1px solid rgba(212,191,148,.35)}
+.tb-who{display:block;margin-bottom:6px;font-weight:600;font-size:17px;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
+.tb.me .tb-who{color:var(--champagne)}
+.tb .fa{position:absolute;left:28px;bottom:10px;width:44px}
+.tb.me .fa{left:auto;right:28px}
+.tb-nar{justify-self:center;font-family:var(--serif);font-style:italic;font-size:32px;color:var(--stone)}
+.tb-end{position:relative;justify-self:center;margin-top:10px;font-weight:600;font-size:46px}
+.tb-end .fa{position:absolute;left:0;bottom:-8px;width:100%}
+
+.gap{display:grid;grid-template-columns:1fr 190px 1fr;align-items:stretch;margin-top:36px}
+.gap-c{position:relative;padding:32px 40px 40px;border-radius:6px}
+.gap-c.fact{background:var(--surface);border:2px solid var(--line-2)}
+.gap-c.supp{border:2px dashed rgba(167,161,150,.6)}
+.gap-lab{display:block;margin-bottom:14px;font-weight:600;font-size:21px;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
+.gap-lab.hl{color:var(--champagne)}
+.gap-c.fact p{font-size:36px;line-height:1.3}
+.gap-c.supp p{font-family:var(--serif);font-style:italic;font-size:46px;line-height:1.2}
+.gap-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.gap-mid svg{width:120px;height:24px;fill:none;stroke:var(--stone);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gap-mid span{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--stone)}
+.gap-miss{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:30px;margin-top:22px;padding:22px 40px;border:2px dotted rgba(167,161,150,.55);border-radius:6px}
+.gap-miss .gap-lab{margin:0}
+.gap-miss ul{display:flex;flex-wrap:wrap;gap:12px;list-style:none}
+.gap-miss li{padding:8px 20px;border-radius:999px;background:var(--surface);font-size:28px;color:var(--ivory-2)}
+
+.split{display:grid;grid-template-columns:600px 1fr;gap:72px;height:100%}
+.split-l{display:flex;flex-direction:column}
+.split-note{margin-top:auto;padding-top:26px;border-top:1px solid var(--line-2);font-size:30px;line-height:1.4;color:var(--ivory-2)}
+.split-note b{display:block;margin-bottom:10px;font-weight:600;font-size:21px;letter-spacing:.2em;text-transform:uppercase;color:var(--champagne)}
+.iq{display:grid;grid-auto-rows:1fr;gap:16px;list-style:none}
+.iq li{position:relative;display:grid;grid-template-columns:84px 1fr;align-content:center;padding:24px 36px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.iq b{grid-row:span 2;font-weight:700;font-size:56px;line-height:1;color:var(--champagne)}
+.iq p{font-family:var(--serif);font-style:italic;font-size:44px;line-height:1.18}
+.iq-tag{justify-self:start;margin-top:14px;padding:4px 14px;border:1.5px solid var(--line-2);border-radius:999px;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--stone)}
+.iq-tag.fact{border-color:var(--ivory-2);color:var(--ivory-2)}
+.iq-tag.supp{border-style:dashed;border-color:var(--stone)}
+.iq-tag.miss{border-style:dotted;border-color:var(--stone)}
+.iq-tag.ask{border-color:var(--champagne);color:var(--champagne)}
+.iq .fa{position:absolute;left:36px;bottom:16px;width:44px}
+
+.convo{display:grid;gap:12px;margin-top:30px}
+.cv-h,.cv-r{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.cv-h span{padding-bottom:12px;border-bottom:1px solid var(--line-2);font-weight:600;font-size:21px;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
+.cv-h span.ask{color:var(--champagne)}
+.cv-r{padding:6px 0 4px;border-bottom:1px solid var(--line)}
+.cv-r>p{position:relative;padding-bottom:24px;font-size:34px;line-height:1.28}
+.cv-r .fa{position:absolute;left:0;bottom:8px;width:48px}
+.cv-r>.cv-t{padding-left:22px;border-left:2px dotted var(--stone-2);font-family:var(--serif);font-style:italic;font-size:37px;line-height:1.2;color:#CFC8BA}
+.cv-t .fa{left:22px}
+.cv-q{font-weight:500;color:var(--champagne)}
+
+.obj{margin-top:28px;padding-left:28px;border-left:3px solid var(--line-2);font-size:34px;line-height:1.3;color:var(--ivory-2)}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:34px}
+.tri-c{display:flex;flex-direction:column;min-height:330px;padding:34px 40px 46px}
+.tri-n{font-weight:700;font-size:56px;line-height:1;color:var(--champagne);margin-bottom:18px}
+.tri-c h3{margin-bottom:auto;font-weight:600;font-size:38px;line-height:1.2}
+.tri-lab{display:block;margin-top:24px;padding-top:16px;border-top:1px solid var(--line-2);font-weight:600;font-size:19px;letter-spacing:.18em;text-transform:uppercase;color:var(--champagne)}
+.tri-s{margin-top:10px;font-size:32px;line-height:1.3;color:var(--ivory-2)}
+.tri-c .fa{position:absolute;left:40px;bottom:22px;width:48px}
+
+.s-anchor{justify-content:center}
+.anchor-t{max-width:1640px;font-weight:600;font-size:92px;line-height:1.08;letter-spacing:-.025em;text-wrap:balance}
+
+.s-drill{justify-content:center}
+.drill-q{max-width:1560px;font-weight:600;font-size:80px;line-height:1.1;letter-spacing:-.02em}
+.drill{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+.drill>.card{padding:32px 40px 50px}
+.drill-t{border-left:2px dotted var(--stone-2)}
+.drill-t ul{display:grid;gap:12px;list-style:none}
+.drill-t li{display:grid;grid-template-columns:200px 1fr;align-items:baseline;font-family:var(--serif);font-style:italic;font-size:36px;line-height:1.25}
+.drill-t li b{font-family:var(--sans);font-style:normal;font-weight:600;font-size:19px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone)}
+.drill-a p{font-weight:500;font-size:44px;line-height:1.25;color:var(--champagne)}
+
+.switch{display:grid;grid-template-columns:540px 1fr 540px;align-items:stretch;margin-top:100px}
+.sw-box{display:flex;flex-direction:column;justify-content:center;padding:32px 38px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.sw-box p{font-family:var(--serif);font-style:italic;font-size:42px;line-height:1.2}
+.sw-mid{position:relative;align-self:stretch;min-height:200px}
+.sw-mid .fa{position:absolute;left:28px;right:28px;top:50%;width:auto}
+.sw-trigger{position:absolute;left:0;right:0;bottom:calc(50% + 50px);text-align:center;font-family:var(--serif);font-style:italic;font-size:32px;line-height:1.3;color:var(--ivory-2)}
+.s-switch .closing{margin-top:80px;font-weight:600;font-size:60px}
+.sw-signs{display:flex;align-items:center;gap:22px;margin-top:44px}
+.sw-signs .gap-lab{margin:0}
+.sw-signs ul{display:flex;gap:12px;list-style:none}
+.sw-signs li{padding:8px 20px;border:1.5px dashed rgba(167,161,150,.55);border-radius:999px;font-size:26px;color:var(--ivory-2)}
+.sw-back{font-family:var(--serif);font-style:italic;font-size:32px;color:var(--ivory)}
+.s-anchor-lead{margin-bottom:44px}
+
+/* ---------- Ligne Droite ---------- */
+.s-code{justify-content:center}
+.s-code .lede{max-width:1520px;margin-top:6px}
+.dix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:44px}
+.dix .card{padding:40px 44px 50px}
+.dix-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+.dix-n{font-weight:700;font-size:150px;line-height:.82;letter-spacing:-.04em;color:var(--champagne);font-variant-numeric:tabular-nums}
+.gauge{display:grid;grid-template-columns:repeat(10,8px);gap:6px;align-items:end;height:44px;margin-bottom:8px}
+.gauge i{display:block;border-radius:2px;background:var(--champagne)}
+.gauge i:nth-child(1){height:19%}.gauge i:nth-child(2){height:28%}.gauge i:nth-child(3){height:37%}.gauge i:nth-child(4){height:46%}.gauge i:nth-child(5){height:55%}
+.gauge i:nth-child(6){height:64%}.gauge i:nth-child(7){height:73%}.gauge i:nth-child(8){height:82%}.gauge i:nth-child(9){height:91%}.gauge i:nth-child(10){height:100%}
+.dix h3{font-weight:600;font-size:48px;letter-spacing:-.01em;margin-bottom:12px}
+.dix p{font-size:33px;line-height:1.32;color:var(--ivory-2)}
+.dix .fa{position:absolute;left:44px;bottom:24px;width:60px}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:44px}
+.duo>.card{padding:46px 50px}
+.duo h3{font-weight:600;font-size:52px;margin-bottom:16px}
+.duo p{font-size:36px;line-height:1.32;color:var(--ivory-2)}
+.duo-link{margin-top:40px}
+
+.tbl{margin-top:40px;border-top:1px solid var(--line-2)}
+.tr{display:grid;grid-template-columns:var(--cols);border-bottom:1px solid var(--line)}
+.tr>span{display:flex;align-items:center;padding:20px 26px;font-size:32px;line-height:1.3}
+.tr>span+span{border-left:1px solid var(--line)}
+.tr.th{background:rgba(238,232,220,.03)}
+.tr.th>span{padding:18px 26px;font-weight:600;font-size:21px;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
+.tr.th>span.hl{color:var(--champagne)}
+.tr .n{font-weight:600;color:var(--champagne)}
+.tr>span.part{flex-direction:column;align-items:flex-start;justify-content:center}
+.rng{position:relative;display:block;width:170px;height:6px;margin-top:12px;border-radius:3px;background:var(--line-2)}
+.rng i{position:absolute;top:0;bottom:0;left:calc(var(--a) * 100%);width:calc((var(--b) - var(--a)) * 100%);border-radius:3px;background:var(--champagne)}
+
+.rules{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,auto);grid-auto-flow:column;gap:0 80px;margin-top:40px;list-style:none}
+.rules.r4{grid-template-rows:repeat(4,auto)}
+.rules li{display:grid;grid-template-columns:96px 1fr;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--line)}
+.rules b{font-weight:600;font-size:46px;letter-spacing:-.01em;color:var(--champagne);font-variant-numeric:tabular-nums}
+.rules li>span{font-size:35px;line-height:1.25}
+.cert-bar{margin-top:48px;padding:34px 46px;background:var(--surface-2);border-color:var(--line-2);font-size:38px}
+
+.flow{position:relative;display:flex;align-items:stretch;width:1680px;margin-top:48px}
+.fl-box{position:relative;flex:none;width:367.5px;min-height:172px;padding:30px 34px 36px}
+.fl-box b{display:block;font-weight:600;font-size:44px;line-height:1;color:var(--champagne);margin-bottom:16px}
+.fl-box p{font-size:36px;line-height:1.25}
+.fl-box .fa{position:absolute;left:34px;bottom:18px;width:60px}
+.fl-arr{flex:none;align-self:center;width:70px;height:24px;fill:none;stroke:var(--champagne);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.fl-loop{display:block;width:1680px;height:104px;margin-top:2px;fill:none;stroke:var(--champagne);stroke-opacity:.75;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+.lev{padding:44px 50px}
+.lev-h{display:flex;align-items:center;gap:20px;margin-bottom:26px}
+.lev-h svg{width:52px;height:52px;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.lev h3{font-weight:600;font-size:46px}
+.lev ul{display:grid;gap:14px;list-style:none}
+.lev li{position:relative;padding-left:34px;font-size:32px;line-height:1.32;color:var(--ivory-2)}
+.lev li::before{content:"";position:absolute;left:2px;top:.52em;width:10px;height:10px;border-radius:2px;background:var(--champagne)}
+
+.syn{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:122px;grid-auto-flow:dense;gap:16px;margin-top:44px}
+.syn-c{position:relative;display:flex;align-items:center;gap:22px;padding:0 30px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.syn-c b{flex:none;font-weight:600;font-size:44px;color:var(--champagne);white-space:nowrap;font-variant-numeric:tabular-nums}
+.syn-c span:not(.rl){font-size:31px;line-height:1.22}
+.syn-c.key{grid-column:span 2;background:transparent;border-color:transparent}
+.syn-c.key .wipe-c{display:flex;align-items:center;gap:22px}
+.syn-c.key b,.syn-c.key span:not(.rl){color:var(--ink)}
+.syn-c.key span:not(.rl){font-weight:700;font-size:40px}
+.syn-c.key .fa{position:absolute;left:30px;bottom:-10px;width:80px}
+
+.s-end{justify-content:center;padding-left:180px}
+.s-end>.fa.v{position:absolute;left:64px;top:0;height:1080px}
+.end-t{font-weight:700;font-size:116px;line-height:1;letter-spacing:-.012em;text-transform:uppercase}
+.s-end .lede{margin-top:46px}
+.end-logo{position:absolute;right:140px;bottom:110px;width:120px;height:auto}
+
+/* ---------- Commandes (hors scène) ---------- */
+.blackout{position:absolute;inset:0;z-index:30;background:#000;opacity:0;pointer-events:none}
+.ctrl{position:fixed;right:22px;bottom:22px;z-index:40;display:flex;gap:10px;opacity:0;transition:opacity .3s ease;pointer-events:none}
+.ctrl.is-on{opacity:1;pointer-events:auto}
+.ctrl button{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:1px solid var(--line-2);background:rgba(34,36,39,.88);transition:background-color .2s ease,border-color .2s ease,transform .15s ease}
+.ctrl svg{width:22px;height:22px;fill:none;stroke:var(--ivory);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ctrl .ctrl-toc{display:flex;gap:9px;width:auto;padding:0 20px 0 16px;border-radius:999px;font-size:15px;color:var(--ivory)}
+@media (hover:hover){.ctrl button:hover{background:var(--surface-2);border-color:var(--champagne)}}
+.ctrl button:focus-visible,.ov button:focus-visible,.help button:focus-visible,.pv button:focus-visible{outline:2px solid var(--champagne);outline-offset:3px}
+.ctrl button:active{transform:scale(.94)}
+.hint,.toast{position:fixed;left:50%;bottom:26px;z-index:45;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:rgba(34,36,39,.92);border:1px solid var(--line-2);font-size:15px;color:var(--stone);white-space:nowrap;pointer-events:none}
+.toast{color:var(--ivory);border-color:var(--champagne)}
+.fatal{position:fixed;inset:auto 24px 24px;z-index:60;padding:18px 22px;border-radius:10px;background:var(--surface);border:1px solid var(--coral);color:var(--ivory);font-size:18px}
+
+.ov,.help{position:fixed;inset:0;z-index:50;overflow:auto;padding:40px 48px 60px;background:var(--graphite-deep);color:var(--ivory)}
+.ov-head,.help-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.ov-head p,.help-head p{font-weight:600;font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--champagne)}
+.ov-close{padding:8px 14px;border-radius:999px;border:1px solid var(--line-2);background:transparent;font-size:15px;color:var(--stone);transition:border-color .2s ease,color .2s ease,transform .15s ease}
+@media (hover:hover){.ov-close:hover{border-color:var(--champagne);color:var(--ivory)}}
+.ov-close:active{transform:scale(.96)}
+.ov-head span{display:block;margin-top:8px;font-size:15px;color:var(--stone)}
+.ov-sec{margin-bottom:38px}
+.ov-part{display:flex;align-items:baseline;gap:14px;width:100%;margin-bottom:16px;padding:0 0 12px;border:0;border-bottom:1px solid var(--line-2);background:transparent;text-align:left;transition:color .2s ease}
+.ov-part b{min-width:26px;font-weight:600;font-size:20px;color:var(--champagne);font-variant-numeric:tabular-nums}
+.ov-part span{font-weight:600;font-size:22px;transition:color .2s ease}
+.ov-part em{margin-left:auto;font-style:normal;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--stone)}
+@media (hover:hover){.ov-part:hover span{color:var(--champagne)}}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.ov-item{display:flex;flex-direction:column;gap:8px;padding:0;border:0;background:transparent;text-align:left;color:var(--ivory-2);transition:transform .2s ease}
+.ov-thumb{position:relative;display:block;width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--line-2);border-radius:6px;background:var(--graphite);pointer-events:none;transition:border-color .2s ease}
+.ov-thumb .slide{inset:auto;left:0;top:0;width:1920px;height:1080px;visibility:visible;opacity:1;transform-origin:0 0;transform:scale(var(--ts,.11))}
+.ov-cap{display:flex;gap:10px;font-size:14px;line-height:1.3;transition:color .2s ease}
+.ov-n{flex:none;font-variant-numeric:tabular-nums;color:var(--champagne)}
+@media (hover:hover){.ov-item:hover{transform:translateY(-3px)}.ov-item:hover .ov-thumb{border-color:var(--champagne)}.ov-item:hover .ov-cap{color:var(--ivory)}}
+.ov-item:active{transform:scale(.98)}
+.ov-item[aria-current="true"] .ov-thumb{border:2px solid var(--champagne)}
+.ov-item[aria-current="true"] .ov-cap{color:var(--ivory)}
+.ov button:focus-visible{outline:2px solid var(--champagne);outline-offset:4px}
+.ov-n{flex:none;font-variant-numeric:tabular-nums;color:var(--champagne)}
+.help dl{display:grid;grid-template-columns:max-content 1fr;gap:14px 28px;max-width:760px;font-size:18px}
+.help dt{text-align:right}
+.help dd{color:var(--ivory-2)}
+
+/* ---------- Vue présentateur ---------- */
+.pv{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,42fr) minmax(0,58fr);grid-template-rows:auto minmax(0,1fr);gap:16px 24px;padding:16px 24px 24px;background:var(--graphite-deep);color:var(--ivory)}
+.pv-top{grid-column:1/-1;display:flex;align-items:center;gap:22px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:16px;color:var(--stone)}
+.pv-mod{font-weight:600;letter-spacing:.03em;color:var(--champagne)}
+.pv-pos{font-variant-numeric:tabular-nums}
+.pv-flag{padding:3px 12px;border-radius:999px;font-weight:600;font-size:14px}
+.pv-black{background:var(--champagne);color:var(--ink)}
+.pv-link{border:1px solid var(--coral);color:var(--coral)}
+.pv-clock{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ivory-2)}
+.pv-left{display:flex;flex-direction:column;gap:14px;min-height:0}
+.pv-stage{position:relative;flex:none;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;border:1px solid var(--line-2)}
+.is-presenter .viewport{position:absolute;inset:0}
+.pv-next{padding:12px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.pv-next span,.pv-t span{display:block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--stone)}
+.pv-next p{margin-top:6px;font-size:18px;line-height:1.35;color:var(--ivory-2)}
+.pv-timers{display:grid;grid-template-columns:1fr 1.5fr;gap:12px}
+.pv-t{position:relative;overflow:hidden;padding:12px 16px 16px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.pv-t b{font-weight:600;font-size:40px;font-variant-numeric:tabular-nums}
+.pv-t em{margin-left:8px;font-style:normal;font-size:18px;color:var(--stone)}
+.pv-bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--line)}
+.pv-bar i{display:block;height:100%;background:var(--champagne);transform-origin:0 50%;transform:scaleX(0)}
+.pv-t.is-warn b{color:var(--champagne)}
+.pv-t.is-over b{color:var(--coral)}
+.pv-t.is-over .pv-bar i{background:var(--coral)}
+.pv-btns{display:flex;flex-wrap:wrap;gap:8px}
+.pv-btns button{min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);font-size:15px;transition:background-color .2s ease,border-color .2s ease,transform .15s ease}
+.pv-btns button.is-main{background:var(--champagne);border-color:var(--champagne);color:var(--ink);font-weight:600}
+@media (hover:hover){.pv-btns button:hover{border-color:var(--champagne)}.pv-btns button.is-main:hover{background:#E0CDA6}}
+.pv-btns button:active{transform:scale(.96)}
+.pv-btns button.is-armed{border-color:var(--coral);color:var(--coral)}
+.pv-notes{position:relative;overflow:auto;padding:26px 34px 40vh;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:var(--nf,26px);line-height:1.5}
+.pv-notes p{margin:0 0 .8em;padding-left:16px;border-left:3px solid transparent;color:var(--stone);transition:color .3s ease,border-color .3s ease}
+.pv-notes p.is-now{color:var(--ivory);border-left-color:var(--champagne);background:rgba(212,191,148,.08);border-radius:0 6px 6px 0;padding-top:.25em;padding-bottom:.25em;padding-right:.4em}
+.pv-notes p.is-past{color:#948F85}
+.pv-notes .n-meta{font-size:.6em;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--champagne)}
+.pv-notes .n-tip{font-family:var(--serif);font-style:italic}
+.pv-notes .n-cue{display:inline-block;margin-right:.5em;padding:.12em .5em;border-radius:4px;background:var(--champagne);color:var(--ink);font-size:.58em;font-weight:600;letter-spacing:.14em;text-transform:uppercase;vertical-align:.22em}
+.pv-notes .n-empty{color:var(--stone)}
+</style>
+</head>
+<body>
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage">
+    <div class="halo-wrap" id="halo-wrap" aria-hidden="true"><div class="halo" id="halo"></div></div>
+    <div class="grain" aria-hidden="true"></div>
+    <canvas class="fx-canvas" id="threads" aria-hidden="true"></canvas>
+
+    <main class="deck" id="deck">
+
+      <!-- ===================== OUVERTURE ===================== -->
+      <section class="module" data-module="ouverture" data-name="Ouverture" data-speaker="Sancho &amp; Greg" data-minutes="0" data-foot="none" data-halo="1560,180">
+        <article class="slide s-cover" data-title="Couverture">
+          <span class="eyebrow" data-anim="fade" data-at="0.5">Super Sunday · Lyon</span>
+          <h1 class="cover-word" data-anim="letters" data-at="1.3"><span class="ln"><span>Vendre</span></span><span class="sweep" data-anim="sweep" data-at="2.6" aria-hidden="true"><span class="ln"><span>Vendre</span></span></span></h1>
+          <i class="fa" style="--w:600px" data-delay="2.7"></i>
+          <div class="cover-meta" data-anim="rise" data-at="2.9">
+            <p class="cover-names">Sancho <span class="hl">–</span> Greg</p>
+            <p class="cover-date">Dimanche 25 octobre 2026</p>
+          </div>
+          <img class="cover-logo" src="assets/sparta-logo.png" alt="SPARTA" data-anim="fade" data-at="3.3">
+          <aside class="notes">
+            <p class="n-meta">Avant de commencer</p>
+            <p>Projection : ouvre index.html dans Chrome sur l’écran du projecteur, appuie sur <b>F</b> pour le plein écran, puis sur <b>P</b> pour ouvrir cette fenêtre de notes sur ton écran.</p>
+            <p>Seule la couverture s’anime d’elle-même, environ quatre secondes : les fils se nouent, VENDRE apparaît. Ensuite, chaque apparition attend ton clic (flèche droite, espace ou télécommande). Le chrono démarre au premier clic.</p>
+            <p>Ordre : Greg (CAB, 4 min), Sancho (développement personnel, 4 min), Sancho (11 min), Greg (11 min).</p>
+          </aside>
+        </article>
+
+        <article class="slide s-toc" data-title="Sommaire" data-foot="Super Sunday · Lyon">
+          <span class="eyebrow" data-anim="fade">Sommaire</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>30 minutes, quatre temps</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="toc-bar" data-anim="fade" aria-hidden="true">
+            <span style="--m:4"><em>4 min</em><i class="fa" data-step="1"></i></span>
+            <span style="--m:4"><em>4 min</em><i class="fa" data-step="2"></i></span>
+            <span style="--m:11"><em>11 min</em><i class="fa" data-step="3"></i></span>
+            <span style="--m:11"><em>11 min</em><i class="fa" data-step="4"></i></span>
+          </div>
+          <ol class="toc">
+            <li data-goto="cab" data-step="1" data-anim="left"><b>01</b><span class="toc-t">Vendre, c’est la base de tout<small>La méthode CAB</small></span><span class="toc-who">Greg</span><span class="toc-min">4 min</span></li>
+            <li data-goto="devperso" data-step="2" data-anim="left"><b>02</b><span class="toc-t">Le développement personnel<small>Pour progresser dans la vente</small></span><span class="toc-who">Sancho</span><span class="toc-min">4 min</span></li>
+            <li data-goto="debat" data-step="3" data-anim="left"><b>03</b><span class="toc-t">Tu gagnes le débat, mais tu perds la personne<small>La partie intellectuelle de la vente</small></span><span class="toc-who">Sancho</span><span class="toc-min">11 min</span></li>
+            <li data-goto="ligne-droite" data-step="4" data-anim="left"><b>04</b><span class="toc-t">La Ligne Droite de Jordan Belfort<small>Étude de cas</small></span><span class="toc-who">Greg</span><span class="toc-min">11 min</span></li>
+          </ol>
+          <aside class="notes">
+            <p class="n-meta">Ouverture · sommaire · 4 clics</p>
+            <p>Voici le déroulé : trente minutes, quatre temps.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> D’abord Greg : vendre, c’est la base de tout, avec la méthode CAB. 4 minutes.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Ensuite Sancho : pourquoi le développement personnel compte pour progresser dans la vente. 4 minutes.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Puis Sancho : tu gagnes le débat, mais tu perds la personne. La partie intellectuelle de la vente. 11 minutes.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Et Greg pour finir : la Ligne Droite de Jordan Belfort, en étude de cas. 11 minutes.</p>
+          </aside>
+        </article>
+      </section>
+
+      <!-- ===================== GREG · CAB ===================== -->
+      <section class="module" data-module="cab" data-name="Vendre, c’est la base de tout" data-speaker="Greg" data-minutes="4" data-foot="Super Sunday · Lyon" data-halo="260,980">
+        <article class="slide s-cab" data-title="Vendre, c’est la base de tout">
+          <span class="eyebrow" data-anim="fade">Ouverture · Méthode CAB</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Vendre, c’est la base de tout</span></span></h2>
+          <i class="fa" style="--w:220px;margin-top:24px"></i>
+          <div class="cab">
+            <span aria-hidden="true"></span>
+            <div class="cab-h" data-anim="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/></svg><span>Parent</span></div>
+            <div class="cab-h" data-anim="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20.5c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/><path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.6c2.1.8 3.5 3 3.5 5.9"/></svg><span>Ami</span></div>
+            <div class="cab-h" data-anim="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.5h18"/><path d="M6 20.5v-7"/><path d="M11 20.5V8"/><path d="M16 20.5V4"/></svg><span>Business</span></div>
+            <div class="cab-h" data-anim="rise"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg><span>Créateur UGC</span></div>
+
+            <div class="cab-l" data-step="1" data-anim="left"><b>C</b><span>Caractéristique</span><i class="fa" data-step="1"></i></div>
+            <div class="cab-c" data-step="1">Expliquer, donner envie, poser un cadre</div>
+            <div class="cab-c" data-step="1">Écouter et convaincre avec sincérité</div>
+            <div class="cab-c" data-step="1">Pitcher, négocier, closer</div>
+            <div class="cab-c" data-step="1">Hook, storytelling, appel à l’action</div>
+
+            <div class="cab-l" data-step="2" data-anim="left"><b>A</b><span>Avantage</span><i class="fa" data-step="2"></i></div>
+            <div class="cab-c" data-step="2">Ton enfant adhère au lieu d’obéir</div>
+            <div class="cab-c" data-step="2">Tes conseils sont entendus et suivis</div>
+            <div class="cab-c" data-step="2">Clients, partenaires et recrues disent oui</div>
+            <div class="cab-c" data-step="2">Tes vidéos convertissent, les marques le voient</div>
+
+            <div class="cab-l" data-step="3" data-anim="left"><b>B</b><span>Bénéfice</span><i class="fa" data-step="3"></i></div>
+            <div class="cab-c b" data-step="3" data-anim="wipe"><span class="wipe"></span><span class="wipe-c">Moins de conflits, une vraie confiance</span></div>
+            <div class="cab-c b" data-step="3" data-anim="wipe"><span class="wipe"></span><span class="wipe-c">Tu aides vraiment ceux que tu aimes</span></div>
+            <div class="cab-c b" data-step="3" data-anim="wipe"><span class="wipe"></span><span class="wipe-c">Revenus, liberté, une équipe qui te suit</span></div>
+            <div class="cab-c b" data-step="3" data-anim="wipe"><span class="wipe"></span><span class="wipe-c">Plus de contrats, mieux payés, récurrents</span></div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 0:00 → 4:00 · 3 clics</p>
+            <p class="n-tip">Repères seulement : le texte oral de Greg n’a pas été fourni. Le contenu affiché reprend sa slide mot pour mot.</p>
+            <p>À l’écran : le titre et les quatre rôles. Parent, Ami, Business, Créateur UGC.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> C, caractéristique. Parent : expliquer, donner envie, poser un cadre. Ami : écouter et convaincre avec sincérité. Business : pitcher, négocier, closer. Créateur UGC : hook, storytelling, appel à l’action.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> A, avantage. Ton enfant adhère au lieu d’obéir. Tes conseils sont entendus et suivis. Clients, partenaires et recrues disent oui. Tes vidéos convertissent, les marques le voient.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> B, bénéfice. Moins de conflits, une vraie confiance. Tu aides vraiment ceux que tu aimes. Revenus, liberté, une équipe qui te suit. Plus de contrats, mieux payés, récurrents.</p>
+            <p data-step="3">Relais à Sancho : le développement personnel.</p>
+          </aside>
+        </article>
+      </section>
+
+      <!-- ===================== SANCHO · DÉVELOPPEMENT PERSONNEL ===================== -->
+      <section class="module" data-module="devperso" data-name="Le développement personnel" data-speaker="Sancho" data-minutes="4" data-foot="Développement personnel · Sancho" data-halo="1720,900">
+
+        <article class="slide s-hook" data-title="Connaître son offre ne suffit pas">
+          <span class="eyebrow" data-anim="fade">Développement personnel</span>
+          <i class="fa" style="--w:120px;margin:-4px 0 40px"></i>
+          <p class="hook-l" data-anim="rise">Tu connais ton offre.<span class="pill" data-anim="check" data-at="0.5"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 25l9 9 17-19"/></svg></span></p>
+          <p class="hook-l" data-anim="rise">Tu sais argumenter.<span class="pill" data-anim="check" data-at="0.75"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 25l9 9 17-19"/></svg></span></p>
+          <p class="hook-l last" data-step="1" data-anim="words">Ça ne suffit pas pour <span class="u"><span class="hl">conduire une conversation.</span><i class="fa" data-step="1"></i></span></p>
+          <div class="vs" data-step="2" data-anim="rise">
+            <i class="fa" data-step="2"></i>
+            <div><span class="vs-lab">Le CAB</span><p>structure la valeur de ton offre.</p></div>
+            <div><span class="vs-lab hl">Le développement personnel</span><p>t’aide à t’en servir face à une vraie personne.</p></div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 0:00 → 1:30 · 2 clics</p>
+            <p>Greg vient de vous donner le CAB : une structure pour présenter la valeur de ce que vous proposez. Tu connais ton offre. Tu sais argumenter.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Et pourtant, ça ne suffit pas pour conduire une conversation. Beaucoup apprennent à présenter une offre et à répondre aux objections. Très peu travaillent sur leurs propres réactions.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Le CAB structure la valeur de ton offre. Le développement personnel t’aide à t’en servir face à une vraie personne, et face à tes propres réflexes.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-auto" data-title="Trois réflexes, trois parades">
+          <span class="eyebrow" data-anim="fade">Développement personnel</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Trois réflexes, trois parades</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="bands">
+            <div class="band" data-step="1" data-anim="stack" data-dim="2" data-undim="4">
+              <b class="band-n">1</b>
+              <p class="band-ref"><span class="band-trig">Tu te sens attaqué</span>Tu te justifies.</p>
+              <p class="band-fix"><span>Recul sur soi</span>Tu le repères, et tu marques une pause avant de répondre.</p>
+              <i class="fa" data-step="1"></i>
+            </div>
+            <div class="band" data-step="2" data-anim="stack" data-dim="3" data-undim="4">
+              <b class="band-n">2</b>
+              <p class="band-ref"><span class="band-trig">Tu veux paraître compétent</span>Tu ne poses plus de questions.</p>
+              <p class="band-fix"><span>Curiosité</span>Tu poses une question de plus avant d’argumenter.</p>
+              <i class="fa" data-step="2"></i>
+            </div>
+            <div class="band" data-step="3" data-anim="stack">
+              <b class="band-n">3</b>
+              <p class="band-ref"><span class="band-trig">Tu vis mal un refus</span>Tu insistes.</p>
+              <p class="band-fix"><span>Ouverture au feedback</span>Tu demandes ce qui a manqué, et tu acceptes qu’on te corrige.</p>
+              <i class="fa" data-step="3"></i>
+            </div>
+          </div>
+          <p class="closing" data-step="4" data-anim="words">Ce ne sont pas des défauts&nbsp;: ce sont des réflexes, et <span class="u"><span class="hl">un réflexe se travaille.</span><i class="fa" data-step="4"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 1:30 → 4:00 · 4 clics</p>
+            <p>Trois réflexes. Vous allez sûrement en reconnaître au moins un.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Tu te sens attaqué, alors tu te justifies : tu parles plus, tu écoutes moins. La parade : le recul sur soi. Tu repères ce qui se passe en toi, et tu marques une pause avant de répondre.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Tu veux paraître compétent, alors tu ne poses plus de questions, et tu réponds à côté. La parade : la curiosité. Une question de plus avant d’argumenter.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Tu vis mal un refus, alors tu insistes, et la personne se ferme un peu plus à chaque relance. La parade : demander ce qui a manqué, et accepter qu’on te corrige.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Ce ne sont pas des défauts, et ça ne dit rien de ta valeur. Ce sont des réflexes, et un réflexe se travaille. Le premier endroit où il se travaille, c’est pendant l’échange, dans ta façon de raisonner. C’est exactement ce qu’on va voir maintenant.</p>
+          </aside>
+        </article>
+      </section>
+
+      <!-- ===================== SANCHO · TU GAGNES LE DÉBAT ===================== -->
+      <section class="module" data-module="debat" data-name="Tu gagnes le débat, mais tu perds la personne" data-speaker="Sancho" data-minutes="11" data-foot="Tu gagnes le débat, mais tu perds la personne · Sancho" data-halo="240,160">
+
+        <article class="slide s-court" data-title="Connaître le système, lire la situation">
+          <span class="eyebrow" data-anim="fade">La partie intellectuelle de la vente</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Tu gagnes le débat,</span></span><span class="ln"><span>mais tu perds la personne</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="court-wrap">
+            <ul class="court-legend">
+              <li data-step="1" data-anim="left"><span class="lg-sw plan"></span><span><b>Le système</b><em>connu par cœur</em></span></li>
+              <li data-step="2" data-anim="left"><span class="lg-sw def"></span><span><b>La défense change</b><em>ce qui se passe vraiment</em></span></li>
+              <li data-step="3" data-anim="left"><span class="lg-sw read"></span><span><b>La lecture</b><em>vous vous adaptez</em></span></li>
+            </ul>
+            <svg class="court" viewBox="0 0 960 400" role="img" aria-label="Demi-terrain de basket : le jeu prévu, un défenseur sur la route, puis une nouvelle trajectoire">
+              <g class="cl" data-anim="draw">
+                <rect x="10" y="10" width="940" height="380" rx="4"/>
+                <rect x="730" y="120" width="220" height="160"/>
+                <path d="M730 140A60 60 0 0 0 730 260"/>
+                <path d="M950 30H860A170 170 0 0 0 860 370H950"/>
+                <path d="M10 140A60 60 0 0 1 10 260"/>
+              </g>
+              <g class="hoop" data-anim="draw" data-at="0.5"><path d="M900 172V228"/><circle cx="882" cy="200" r="14"/></g>
+              <circle class="me" data-anim="pop" data-at="0.8" cx="110" cy="250" r="12"/>
+              <path class="plan" data-step="1" data-anim="draw" d="M124 248L866 203"/>
+              <g class="def" data-step="2" data-anim="pop"><circle cx="480" cy="226" r="24"/><path d="M469 215L491 237M491 215L469 237"/></g>
+              <path class="read" data-step="3" data-anim="draw" d="M124 250C300 256 380 330 500 318S760 236 866 205"/>
+            </svg>
+          </div>
+          <p class="closing" data-step="3" data-anim="words" data-at="0.6">Connaître le système ne dispense pas de <span class="u"><span class="hl">lire la situation.</span><i class="fa" data-step="3"></i></span></p>
+          <p class="viv" data-step="4" data-anim="rise"><b class="u">La vivacité<i class="fa" data-step="4"></i></b><span>Remarquer le détail qui doit vous faire changer de question.</span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 00:00 → 01:15 · 4 clics</p>
+            <p class="n-tip">Durée visée : 11 minutes, à confirmer par une répétition chronométrée. Les indications entre crochets ne sont pas prononcées.</p>
+            <p>Vous pouvez connaître votre présentation. Connaître votre produit. Avoir appris des réponses aux objections.</p>
+            <p>Mais dès que la personne sort de ce que vous aviez prévu, qu’est-ce que vous faites ?</p>
+            <p>C’est là que commence la partie intellectuelle de la vente : votre capacité à écouter une information, à comprendre ce qu’elle vous apprend et à choisir la suite de la conversation.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Au basket, vous pouvez connaître un système par cœur.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Si la défense change et que vous jouez exactement comme prévu sans regarder ce qui se passe, vous risquez de prendre la mauvaise décision.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Dans une conversation, c’est pareil : vous devez lire ce qui se passe et vous adapter.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> La vivacité, ce n’est pas seulement répondre rapidement. C’est remarquer le détail qui doit vous faire changer de question.</p>
+            <p data-step="4">Parfois, la meilleure réaction commence par deux secondes de réflexion.</p>
+            <p data-step="4">Aujourd’hui, on va voir comment on peut avoir beaucoup d’arguments, raisonner de travers… et gagner un débat en perdant la personne.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-scene" data-title="La scène">
+          <span class="eyebrow" data-anim="fade">Situation fictive</span>
+          <p class="who" data-anim="fade">Vous commencez à présenter JIFU. La personne vous dit&nbsp;:</p>
+          <div class="thread">
+            <p class="tb them" data-step="1" data-anim="left"><span class="tb-who">La personne</span>« Les activités comme ça, j’ai déjà donné. On m’avait promis un accompagnement. Au final, je me suis débrouillé tout seul. »<i class="fa" data-step="1"></i></p>
+            <p class="tb me" data-step="2" data-anim="right" data-dim="6"><span class="tb-who">Vous</span>« Mais chez nous, c’est différent&#8239;! On a des formations, des lives et une équipe. »<i class="fa" data-step="2"></i></p>
+            <p class="tb them" data-step="3" data-anim="left" data-dim="6"><span class="tb-who">La personne</span>« C’est ce qu’on m’avait dit aussi. »<i class="fa" data-step="3"></i></p>
+            <p class="tb-nar" data-step="4" data-anim="fade" data-dim="6">Elle vous parle de son expérience&#8239;; vous lui parlez de votre organisation.</p>
+            <p class="tb me" data-step="5" data-anim="right" data-dim="6"><span class="tb-who">Vous</span>« Tu ne peux pas mettre tout le monde dans le même panier sans même regarder&#8239;! »<i class="fa" data-step="5"></i></p>
+            <p class="tb-end" data-step="6" data-anim="words">La conversation se ferme.<i class="fa" data-step="6" data-hide></i></p>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 01:15 → 02:15 · 6 clics</p>
+            <p>Imaginez cette scène.</p>
+            <p>Vous commencez à présenter JIFU. La personne vous dit :</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> « Les activités comme ça, j’ai déjà donné. On m’avait promis un accompagnement. Au final, je me suis débrouillé tout seul. »</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Et vous répondez : « Mais chez nous, c’est différent ! On a des formations, des lives et une équipe. »</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Elle répond : « C’est ce qu’on m’avait dit aussi. »</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Vous montrez des exemples. Vous expliquez davantage.</p>
+            <p data-step="4">Elle vous parle de son expérience ; vous lui parlez de votre organisation.</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> Et comme elle ne semble pas convaincue, vous insistez : « Tu ne peux pas mettre tout le monde dans le même panier sans même regarder ! »</p>
+            <p data-step="6"><span class="n-cue">Clic 6</span> La conversation se ferme. <i>[Pause.]</i></p>
+          </aside>
+        </article>
+
+        <article class="slide s-gap" data-title="Où le raisonnement a dérapé">
+          <span class="eyebrow" data-anim="fade">À quel moment votre raisonnement a dérapé&#8239;?</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Ce que vous avez conclu,</span></span><span class="ln"><span>ce qu’il a dit</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="gap">
+            <div class="gap-c supp" data-step="1" data-anim="rise"><span class="gap-lab">Ce que vous avez conclu</span><p>« Il croit que notre accompagnement n’existe pas. »</p><i class="fa" data-step="1" style="position:absolute;left:40px;bottom:24px;width:60px"></i></div>
+            <div class="gap-mid" data-step="2" data-anim="fade"><svg viewBox="0 0 120 24" aria-hidden="true"><path d="M4 12h106"/><path d="M100 4l10 8-10 8"/></svg><span>vraiment&#8239;?</span></div>
+            <div class="gap-c fact" data-step="2" data-anim="rise"><span class="gap-lab">Ce qu’il a dit</span><p>Un accompagnement promis. Une expérience où il s’est retrouvé seul.</p><i class="fa" data-step="2" style="position:absolute;left:40px;bottom:24px;width:60px"></i></div>
+          </div>
+          <div class="gap-miss" data-step="2" data-anim="rise" data-at="0.45">
+            <span class="gap-lab">Ce que vous ne savez pas encore</span>
+            <ul><li>Ce qu’il attendait</li><li>Ce qui lui avait été annoncé</li><li>Ce qui s’est passé</li></ul>
+          </div>
+          <p class="closing" data-step="3" data-anim="words">Des informations exactes, en réponse à <span class="u"><span class="hl">une interprétation jamais vérifiée.</span><i class="fa" data-step="3"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 02:15 → 03:00 · 3 clics</p>
+            <p>À quel moment votre raisonnement a dérapé ?</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Quand vous avez entendu « mauvaise expérience », vous avez peut-être conclu : « Il croit que notre accompagnement n’existe pas. »</p>
+            <p data-step="1">Alors vous essayez de prouver qu’il existe.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Mais est-ce réellement ce qu’il vous a dit ?</p>
+            <p data-step="2">Il vous a parlé d’un accompagnement promis, puis d’une expérience où il s’est retrouvé seul. Vous ne savez pas encore ce qu’il attendait, ce qui lui avait été annoncé ou ce qui s’est passé.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Vous avez répondu à votre interprétation avant de la vérifier.</p>
+            <p data-step="3">Vous pouvez donc apporter des informations exactes… qui ne répondent pas à sa préoccupation.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-four" data-title="Les quatre questions intérieures">
+          <div class="split">
+            <div class="split-l">
+              <span class="eyebrow" data-anim="fade">Avant de répondre</span>
+              <h2 class="t m" data-anim="lines"><span class="ln"><span>Quatre</span></span><span class="ln"><span>questions</span></span><span class="ln"><span>intérieures</span></span></h2>
+              <i class="fa" style="--w:200px;margin-top:24px"></i>
+              <p class="split-note" data-step="5" data-anim="rise"><b>Le réflexe</b>Ce que je sais, ce que je suppose, ce qui me manque, ce que je vais demander.</p>
+            </div>
+            <ol class="iq">
+              <li data-step="1" data-anim="stack"><b>1</b><p>Qu’est-ce que la personne m’a réellement dit&#8239;?</p><span class="iq-tag fact">Les faits</span><i class="fa" data-step="1"></i></li>
+              <li data-step="2" data-anim="stack"><b>2</b><p>Qu’est-ce que je suis en train de supposer&#8239;?</p><span class="iq-tag supp">Mes suppositions</span><i class="fa" data-step="2"></i></li>
+              <li data-step="3" data-anim="stack"><b>3</b><p>Quelle information me manque pour répondre utilement&#8239;?</p><span class="iq-tag miss">Ce qui manque</span><i class="fa" data-step="3"></i></li>
+              <li data-step="4" data-anim="stack"><b>4</b><p>Quelle question va me permettre de l’obtenir&#8239;?</p><span class="iq-tag ask">La question</span><i class="fa" data-step="4"></i></li>
+            </ol>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 03:00 → 04:15 · 5 clics</p>
+            <p>Pour éviter ça, je vous propose quatre questions à vous poser intérieurement.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Première question : qu’est-ce que la personne m’a réellement dit ?</p>
+            <p data-step="1">Les mots qu’elle a utilisés. Les faits qu’elle rapporte.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Deuxième question : qu’est-ce que je suis en train de supposer ?</p>
+            <p data-step="2">« Il est fermé. » « Il n’a pas compris. » « Il faut le rassurer. »</p>
+            <p data-step="2">Ce sont peut-être de bonnes hypothèses. Pour l’instant, elles restent à vérifier.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Troisième question : quelle information me manque pour répondre utilement ?</p>
+            <p data-step="3">Dans notre exemple : qu’est-ce qui s’était passé, et de quelle aide cette personne avait-elle besoin ?</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Quatrième question : quelle question va me permettre de l’obtenir ?</p>
+            <p data-step="4">C’est à ce moment-là que vous choisissez votre prochaine phrase.</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> Ce raisonnement doit devenir un réflexe : ce que je sais, ce que je suppose, ce qui me manque, ce que je vais demander.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-convo" data-title="La scène reprise">
+          <span class="eyebrow" data-anim="fade">Reprenons la scène</span>
+          <h2 class="t m" data-anim="lines"><span class="ln"><span>Chaque réponse change la question</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="convo">
+            <div class="cv-h" data-anim="fade"><span>Il dit</span><span>Vous pensez</span><span class="ask">Vous demandez</span></div>
+            <div class="cv-r">
+              <p class="cv-p" data-step="1" data-dim="4">« On m’avait promis un accompagnement. Je me suis retrouvé seul. »<i class="fa" data-step="1"></i></p>
+              <p class="cv-t" data-anim="words" data-step="2" data-dim="4">Il a été déçu. Je ne sais pas précisément pourquoi.<i class="fa" data-step="2"></i></p>
+              <p class="cv-q" data-step="3" data-dim="4">« Qu’est-ce qui s’était passé pour toi&#8239;? »<i class="fa" data-step="3"></i></p>
+            </div>
+            <div class="cv-r">
+              <p class="cv-p" data-step="4" data-dim="7">« J’en avais parlé à deux amis. […] La personne qui devait nous aider n’était jamais disponible. »<i class="fa" data-step="4"></i></p>
+              <p class="cv-t" data-anim="words" data-step="5" data-dim="7">Il avait engagé des proches. Peur pour sa réputation&#8239;? Possible&nbsp;: je vérifie.<i class="fa" data-step="5"></i></p>
+              <p class="cv-q" data-step="6" data-dim="7">« Qu’est-ce qui t’avait le plus posé problème dans cette situation&#8239;? »<i class="fa" data-step="6"></i></p>
+            </div>
+            <div class="cv-r">
+              <p class="cv-p" data-step="7">« Mes amis comptaient sur moi. […] Je ne veux pas revivre ça. »<i class="fa" data-step="7"></i></p>
+              <p class="cv-t" data-anim="words" data-step="8">Je reformule pour vérifier.<i class="fa" data-step="8"></i></p>
+              <p class="cv-q" data-step="9">« Ce qui t’inquiète, c’est de te retrouver à nouveau responsable de tes proches sans avoir les réponses. C’est bien ça&#8239;? »<i class="fa" data-step="9"></i></p>
+            </div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 04:15 → 06:15 · 9 clics</p>
+            <p>Reprenons la scène.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> « On m’avait promis un accompagnement. Je me suis retrouvé seul. »</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Dans votre tête : « Je sais qu’il a été déçu. Je ne sais pas précisément pourquoi. Avant de montrer notre fonctionnement, je dois comprendre son expérience. »</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Vous demandez : « Qu’est-ce qui s’était passé pour toi ? »</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Il raconte : « J’en avais parlé à deux amis. Ensuite, on avait des questions et la personne qui devait nous aider n’était jamais disponible. »</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> Vous avez une nouvelle information : il avait aussi engagé des proches.</p>
+            <p data-step="5">Vous pourriez immédiatement penser : « Il a peur pour sa réputation. »</p>
+            <p data-step="5">C’est une possibilité. Mais vous ne lui annoncez pas ce qu’il ressent. Vous vérifiez :</p>
+            <p data-step="6"><span class="n-cue">Clic 6</span> « Qu’est-ce qui t’avait le plus posé problème dans cette situation ? »</p>
+            <p data-step="7"><span class="n-cue">Clic 7</span> Il précise : « Mes amis comptaient sur moi. Je ne savais plus quoi leur dire. Je ne veux pas revivre ça. »</p>
+            <p data-step="8"><span class="n-cue">Clic 8</span> Là, vous pouvez reformuler :</p>
+            <p data-step="9"><span class="n-cue">Clic 9</span> « Donc ce qui t’inquiète, c’est de te retrouver à nouveau responsable vis-à-vis de tes proches sans avoir les réponses pour les accompagner. C’est bien ça ? »</p>
+            <p data-step="9">Vous voyez la progression ?</p>
+            <p data-step="9">À chaque réponse, vous apprenez quelque chose et vous adaptez la question suivante.</p>
+            <p data-step="9">Vous n’êtes plus en train de chercher la meilleure réplique. Vous construisez une compréhension suffisamment précise pour savoir quoi proposer.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-three" data-title="Une même phrase, trois explications">
+          <span class="eyebrow" data-anim="fade">Même première phrase</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Trois explications possibles</span></span></h2>
+          <p class="obj" data-anim="rise">« On m’avait promis un accompagnement. »</p>
+          <div class="tri">
+            <div class="card tri-c" data-step="1" data-anim="rise" data-dim="2" data-undim="4">
+              <b class="tri-n">1</b><h3>Personne ne répondait à ses questions techniques</h3>
+              <span class="tri-lab">La suite</span><p class="tri-s">Lui montrer concrètement comment obtenir cette aide&nbsp;: ressources et limites.</p>
+              <i class="fa" data-step="1"></i>
+            </div>
+            <div class="card tri-c" data-step="2" data-anim="rise" data-dim="3" data-undim="4">
+              <b class="tri-n">2</b><h3>Des résultats promis, jamais obtenus</h3>
+              <span class="tri-lab">La suite</span><p class="tri-s">Clarifier les attentes&nbsp;: ce qui peut être apporté, ce qui ne peut pas être garanti.</p>
+              <i class="fa" data-step="2"></i>
+            </div>
+            <div class="card tri-c" data-step="3" data-anim="rise">
+              <b class="tri-n">3</b><h3>Il voulait apprendre une compétence, on le poussait à recruter</h3>
+              <span class="tri-lab">La suite</span><p class="tri-s">Clarifier ce qu’il cherche aujourd’hui, vérifier si votre proposition y correspond.</p>
+              <i class="fa" data-step="3"></i>
+            </div>
+          </div>
+          <p class="closing" data-step="4" data-anim="words">Une phrase de départ. <span class="u"><span class="hl">Trois conversations différentes.</span><i class="fa" data-step="4"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 06:15 → 07:30 · 4 clics</p>
+            <p>Et maintenant, attention : notre exemple aurait pu prendre une autre direction.</p>
+            <p>Même première phrase : « On m’avait promis un accompagnement. »</p>
+            <p>Mais trois explications possibles.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Première possibilité : personne ne répondait à ses questions techniques.</p>
+            <p data-step="1">La suite pertinente peut être de lui montrer concrètement comment obtenir cette aide, avec quelles ressources et quelles limites.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Deuxième possibilité : on lui avait promis des résultats qu’il n’a jamais obtenus.</p>
+            <p data-step="2">Une liste de formations ne répond pas à cette inquiétude. Il faut clarifier les attentes, ce qui peut être apporté et ce qui ne peut pas être garanti.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Troisième possibilité : il voulait apprendre une compétence, mais ses interlocuteurs le poussaient surtout à recruter.</p>
+            <p data-step="3">Avant de présenter votre opportunité, vous devez clarifier ce qu’il cherche aujourd’hui et vérifier si votre proposition correspond à cet objectif.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Trois situations. Une phrase de départ. Trois conversations différentes.</p>
+            <p data-step="4">Voilà pourquoi apprendre une réponse sans comprendre son contexte vous limite.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-anchor" data-title="Une question est utile quand…">
+          <span class="eyebrow" data-anim="fade">À retenir</span>
+          <p class="anchor-t" data-anim="words">Une question est utile quand sa réponse peut <span class="u"><span class="hl">changer votre manière de poursuivre.</span><i class="fa"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 07:30 → 08:15 · aucun clic</p>
+            <p>Une question est utile quand sa réponse peut changer votre manière de poursuivre.</p>
+            <p>Si, quelle que soit la réponse du prospect, vous repartez sur exactement le même argument, demandez-vous à quoi votre question a servi.</p>
+            <p>Vous avez peut-être laissé la personne parler, mais vous n’avez pas encore utilisé ce qu’elle vous a appris.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-drill" data-title="« Vous dites tous que vous êtes différents »">
+          <span class="eyebrow" data-anim="fade">Petit exercice mental</span>
+          <p class="drill-q" data-anim="rise">« Oui, mais vous dites tous que vous êtes différents. »</p>
+          <i class="fa" style="--w:160px;margin-top:36px"></i>
+          <div class="drill">
+            <div class="card drill-t" data-step="1" data-anim="rise">
+              <span class="gap-lab">Les quatre questions</span>
+              <ul>
+                <li><b>Je sais</b>Elle remet en question notre différence.</li>
+                <li><b>Je suppose</b>Pas confiance&#8239;? Besoin de concret&#8239;?</li>
+                <li><b>Il me manque</b>Ce qu’elle aurait besoin d’examiner.</li>
+              </ul>
+              <i class="fa" data-step="1" style="position:absolute;left:40px;bottom:24px;width:60px"></i>
+            </div>
+            <div class="card drill-a" data-step="2" data-anim="rise">
+              <span class="gap-lab hl">Une question possible</span>
+              <p>« Qu’est-ce que tu voudrais pouvoir vérifier concrètement avant de te faire un avis&#8239;? »</p>
+              <i class="fa" data-step="2" style="position:absolute;left:40px;bottom:24px;width:60px"></i>
+            </div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 08:15 → 09:30 · 2 clics</p>
+            <p>Petit exercice mental.</p>
+            <p>La personne vous dit :</p>
+            <p>« Oui, mais vous dites tous que vous êtes différents. »</p>
+            <p><i>[Pause de quelques secondes.]</i></p>
+            <p>Avant de chercher quoi lui répondre, posez-vous les quatre questions.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Qu’est-ce que je sais ? Elle remet en question notre affirmation de différence.</p>
+            <p data-step="1">Qu’est-ce que je suppose ? Peut-être qu’elle ne nous fait pas confiance. Peut-être qu’elle attend quelque chose de plus concret.</p>
+            <p data-step="1">Qu’est-ce qui me manque ? Ce qu’elle aurait besoin d’examiner pour se faire un avis.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Une question possible serait : « Qu’est-ce que tu voudrais pouvoir vérifier concrètement avant de te faire un avis ? »</p>
+            <p data-step="2">Sa réponse vous indiquera ce qui compte pour elle.</p>
+            <p data-step="2">Vous pourrez alors apporter un élément pertinent, reconnaître que vous devez vérifier une information, ou constater que votre offre ne correspond pas.</p>
+            <p data-step="2">Ce qui compte, c’est que votre réaction découle de ce que vous avez appris.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-switch" data-title="Le moment où tout bascule">
+          <span class="eyebrow" data-anim="fade">Quand on se sent attaqué</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Le moment où tout bascule</span></span></h2>
+          <div class="switch">
+            <div class="sw-box" data-anim="rise"><span class="gap-lab">Votre question intérieure</span><p>« Qu’est-ce que j’ai besoin de comprendre&#8239;? »</p></div>
+            <div class="sw-mid">
+              <p class="sw-trigger" data-step="1" data-anim="fade">L’autre émet un doute.<br>On veut tout défendre.</p>
+              <i class="fa"></i>
+              <i class="fa" data-step="2" data-break></i>
+            </div>
+            <div class="sw-box" data-step="2" data-anim="rise"><span class="gap-lab">Elle devient</span><p>« Comment je lui prouve qu’il a tort&#8239;? »</p></div>
+          </div>
+          <p class="closing" data-step="3" data-anim="words">C’est là qu’on peut <span class="hl">gagner le débat et perdre la personne.</span></p>
+          <div class="sw-signs" data-step="4" data-anim="rise">
+            <span class="gap-lab hl">Le signal</span>
+            <ul><li>Plus fort</li><li>Plus vite</li><li>Encore plus d’arguments</li></ul>
+            <span class="sw-back">Revenez aux informations disponibles.</span>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 09:30 → 10:20 · 4 clics</p>
+            <p>Il y a une difficulté supplémentaire : parfois, on se sent personnellement attaqué.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> On aime notre équipe. On est fier de notre activité. Et au moment où l’autre émet un doute, on veut défendre tout ce qu’on a construit.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Notre question intérieure devient : « Comment je lui prouve qu’il a tort ? »</p>
+            <p data-step="2">Et on cesse de se demander : « Qu’est-ce que j’ai besoin de comprendre ? »</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> C’est là qu’on peut gagner le débat et perdre la personne.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Votre vivacité doit aussi vous permettre de repérer ce changement chez vous.</p>
+            <p data-step="4">Vous sentez que vous voulez répondre plus fort, plus vite, avec encore plus d’arguments ? Revenez aux informations disponibles.</p>
+            <p data-step="4">Qu’a-t-il dit ? Qu’ai-je supposé ? Que me manque-t-il ? Quelle question serait utile maintenant ?</p>
+          </aside>
+        </article>
+
+        <article class="slide s-anchor" data-title="Votre prochaine phrase">
+          <span class="eyebrow" data-anim="fade">Pour finir</span>
+          <p class="lede s-anchor-lead" data-anim="rise">Après chaque conversation&nbsp;: sur quelle supposition vous êtes-vous appuyé&#8239;?</p>
+          <p class="anchor-t" data-step="1" data-anim="words">Votre prochaine phrase doit tenir compte de ce que la personne <span class="u"><span class="hl">vient de vous apprendre.</span><i class="fa" data-step="1"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Sancho · 10:20 → 11:00 · 1 clic</p>
+            <p>Cette façon de réfléchir se travaille après chaque conversation : reprenez une réaction qui vous a surpris et demandez-vous sur quelle supposition vous vous êtes appuyé.</p>
+            <p>Vous développerez ainsi votre capacité à reconnaître ces moments pendant l’échange.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Retenez cette exigence : votre prochaine phrase doit tenir compte de ce que la personne vient de vous apprendre.</p>
+            <p data-step="1">C’est cette qualité de raisonnement qui vous permettra de poser les bonnes questions au bon moment, puis d’apporter une réponse adaptée.</p>
+          </aside>
+        </article>
+      </section>
+
+      <!-- ===================== GREG · LA LIGNE DROITE ===================== -->
+      <section class="module" data-module="ligne-droite" data-name="La Ligne Droite de Jordan Belfort" data-speaker="Greg" data-minutes="11" data-foot="Vendre · La Ligne Droite de Jordan Belfort" data-halo="1680,240">
+
+        <article class="slide s-code" data-title="Toutes les ventes se ressemblent">
+          <span class="eyebrow" data-anim="fade">Le code de la vente</span>
+          <h2 class="t xl" data-anim="lines"><span class="ln"><span>Toutes les ventes</span></span><span class="ln"><span>se ressemblent.</span></span></h2>
+          <i class="fa" style="--w:260px;margin:40px 0 44px"></i>
+          <p class="lede" data-step="1" data-anim="words">Peu importe le produit&nbsp;: derrière chaque objection, il y a <span class="u"><span class="hl">un manque de certitude</span><i class="fa" data-step="1"></i></span>.</p>
+          <aside class="notes">
+            <p class="n-meta">Greg · 0:00 → 0:40 · 1 clic</p>
+            <p class="n-tip">Repères seulement : le texte oral de Greg n’a pas été fourni. Chaque note reprend sa slide, clic par clic.</p>
+            <p>Toutes les ventes se ressemblent.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Peu importe le produit : derrière chaque objection, il y a un manque de certitude.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-dix" data-title="Les 3 Dix">
+          <span class="eyebrow" data-anim="fade">Le cœur du système</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Les 3 Dix</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="dix">
+            <div class="card" data-step="1" data-anim="rise">
+              <div class="dix-top"><b class="dix-n" data-step="1" data-anim="count" data-to="10">10</b><span class="gauge" data-step="1" data-anim="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <h3>Le produit</h3><p>Il l’aime et croit qu’il répond à son besoin.</p><i class="fa" data-step="1"></i>
+            </div>
+            <div class="card" data-step="2" data-anim="rise">
+              <div class="dix-top"><b class="dix-n" data-step="2" data-anim="count" data-to="10">10</b><span class="gauge" data-step="2" data-anim="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <h3>Toi</h3><p>Il te voit comme un expert qui se soucie de lui.</p><i class="fa" data-step="2"></i>
+            </div>
+            <div class="card" data-step="3" data-anim="rise">
+              <div class="dix-top"><b class="dix-n" data-step="3" data-anim="count" data-to="10">10</b><span class="gauge" data-step="3" data-anim="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <h3>L’entreprise</h3><p>Il fait confiance à la structure derrière.</p><i class="fa" data-step="3"></i>
+            </div>
+          </div>
+          <p class="closing" data-step="4" data-anim="words"><span class="u"><span>Un seul Dix trop bas, et il n’achète pas.</span><i class="fa" data-step="4"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Greg · 0:40 → 1:40 · 4 clics</p>
+            <p>Le cœur du système : les 3 Dix.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 10, le produit : il l’aime et croit qu’il répond à son besoin.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 10, toi : il te voit comme un expert qui se soucie de lui.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> 10, l’entreprise : il fait confiance à la structure derrière.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Un seul Dix trop bas, et il n’achète pas.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-cert" data-title="Logique et émotion">
+          <span class="eyebrow" data-anim="fade">Deux types de certitude</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Logique et émotion</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="duo">
+            <div class="card grid-bg" data-step="1" data-anim="left"><h3>Logique</h3><p>Construite par les mots&nbsp;: arguments, chiffres, preuves.</p></div>
+            <div class="card warm" data-step="2" data-anim="rise"><h3 class="hl">Émotionnelle</h3><p>Un ressenti viscéral que « c’est bon ». Elle crée l’envie.</p></div>
+          </div>
+          <p class="closing duo-link" data-step="3" data-anim="words">On achète sur l’émotion, puis on justifie par la logique. <span class="u"><strong>Il faut créer les deux.</strong><i class="fa" data-step="3"></i></span></p>
+          <aside class="notes">
+            <p class="n-meta">Greg · 1:40 → 2:30 · 3 clics</p>
+            <p>Deux types de certitude : logique et émotion.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Logique : construite par les mots. Arguments, chiffres, preuves.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Émotionnelle : un ressenti viscéral que « c’est bon ». Elle crée l’envie.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> On achète sur l’émotion, puis on justifie par la logique. Il faut créer les deux.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-five" data-title="Les 5 éléments du système">
+          <span class="eyebrow" data-anim="fade">Les fondations</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Les 5 éléments du système</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="tbl" style="--cols:110px 560px 1fr">
+            <div class="tr th" data-anim="fade"><span class="hl">#</span><span>Élément</span><span>Ce que ça veut dire</span></div>
+            <div class="tr" data-step="1"><span class="n">1</span><span>Il aime le produit</span><span>Certitude produit, logique et émotionnelle</span></div>
+            <div class="tr" data-step="1"><span class="n">2</span><span>Il a confiance en toi</span><span>Expertise et lien</span></div>
+            <div class="tr" data-step="1"><span class="n">3</span><span>Il a confiance en l’entreprise</span><span>Certitude sur la structure</span></div>
+            <div class="tr" data-step="2"><span class="n">4</span><span>Abaisser le seuil d’action</span><span>Le niveau de certitude dont il a besoin pour agir peut baisser</span></div>
+            <div class="tr" data-step="2"><span class="n">5</span><span>Augmenter la douleur</span><span>La douleur crée l’urgence</span></div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 2:30 → 3:20 · 2 clics</p>
+            <p>Les fondations : les 5 éléments du système.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 1, il aime le produit : certitude produit, logique et émotionnelle. 2, il a confiance en toi : expertise et lien. 3, il a confiance en l’entreprise : certitude sur la structure.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 4, abaisser le seuil d’action : le niveau de certitude dont il a besoin pour agir peut baisser. 5, augmenter la douleur : la douleur crée l’urgence.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-tri" data-title="Tu es un trieur, pas un alchimiste">
+          <span class="eyebrow" data-anim="fade">Prospection</span>
+          <h2 class="t m" data-anim="lines"><span class="ln"><span>Tu es un trieur, pas un alchimiste</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="tbl" style="--cols:470px 450px 270px 1fr">
+            <div class="tr th" data-anim="fade"><span>Profil</span><span>Description</span><span>Part</span><span class="hl">Action</span></div>
+            <div class="tr" data-step="1"><span>Acheteurs « en chaleur »</span><span>Décidés à agir maintenant</span><span class="part">10–20&nbsp;%<i class="rng" style="--a:.10;--b:.20"><i></i></i></span><span>Avancer</span></div>
+            <div class="tr" data-step="2"><span>Acheteurs « en puissance »</span><span>Le besoin, sans l’urgence</span><span class="part">30–40&nbsp;%<i class="rng" style="--a:.30;--b:.40"><i></i></i></span><span>Amplifier la douleur</span></div>
+            <div class="tr" data-step="3"><span>Curieux</span><span>Déguisés en acheteurs</span><span class="part">30–40&nbsp;%<i class="rng" style="--a:.30;--b:.40"><i></i></i></span><span>Éliminer</span></div>
+            <div class="tr" data-step="4"><span>Erreurs</span><span>Aucune envie d’être là</span><span class="part">Le reste</span><span>Éliminer</span></div>
+          </div>
+          <p class="closing" data-step="5" data-anim="words" style="font-size:38px">Objectif&nbsp;: sortir vite les curieux, faire avancer les acheteurs, réveiller ceux qui ne sentent pas encore leur douleur.</p>
+          <aside class="notes">
+            <p class="n-meta">Greg · 3:20 → 4:20 · 5 clics</p>
+            <p>Prospection : tu es un trieur, pas un alchimiste.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Acheteurs « en chaleur » : décidés à agir maintenant. 10 à 20 %. Action : avancer.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Acheteurs « en puissance » : le besoin, sans l’urgence. 30 à 40 %. Action : amplifier la douleur.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Curieux : déguisés en acheteurs. 30 à 40 %. Action : éliminer.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> Erreurs : aucune envie d’être là. Le reste. Action : éliminer.</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> Objectif : sortir vite les curieux, faire avancer les acheteurs, réveiller ceux qui ne sentent pas encore leur douleur.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-rules" data-title="Les 10 règles de qualification">
+          <span class="eyebrow" data-anim="fade">Prospection</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>Les 10 règles de qualification</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <ol class="rules">
+            <li data-step="1"><b>01</b><span>Trier, pas transformer</span></li>
+            <li data-step="1"><b>02</b><span>Demander la permission de questionner</span></li>
+            <li data-step="1"><b>03</b><span>Toujours un script</span></li>
+            <li data-step="1"><b>04</b><span>Du moins intrusif au plus intrusif</span></li>
+            <li data-step="1"><b>05</b><span>La bonne tonalité à chaque question</span></li>
+            <li data-step="2"><b>06</b><span>Langage corporel adapté à l’écoute</span></li>
+            <li data-step="2"><b>07</b><span>Un ordre de questions logique</span></li>
+            <li data-step="2"><b>08</b><span>Noter la douleur sans la résoudre</span></li>
+            <li data-step="2"><b>09</b><span>Une transition forte vers la présentation</span></li>
+            <li data-step="2"><b>10</b><span>Rester sur la ligne</span></li>
+          </ol>
+          <aside class="notes">
+            <p class="n-meta">Greg · 4:20 → 5:20 · 2 clics</p>
+            <p>Prospection : les 10 règles de qualification.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 01 Trier, pas transformer. 02 Demander la permission de questionner. 03 Toujours un script. 04 Du moins intrusif au plus intrusif. 05 La bonne tonalité à chaque question.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 06 Langage corporel adapté à l’écoute. 07 Un ordre de questions logique. 08 Noter la douleur sans la résoudre. 09 Une transition forte vers la présentation. 10 Rester sur la ligne.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-keys" data-title="Les 8 clés d’un script">
+          <span class="eyebrow" data-anim="fade">Présentation</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Les 8 clés d’un script</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <ol class="rules r4">
+            <li data-step="1"><b>01</b><span>Garder des arguments en réserve</span></li>
+            <li data-step="1"><b>02</b><span>Des bénéfices, pas des caractéristiques</span></li>
+            <li data-step="1"><b>03</b><span>Des points d’arrêt&nbsp;: « Tu me suis&#8239;? »</span></li>
+            <li data-step="1"><b>04</b><span>Écrit comme on parle</span></li>
+            <li data-step="2"><b>05</b><span>Un enchaînement fluide</span></li>
+            <li data-step="2"><b>06</b><span>Honnête et éthique</span></li>
+            <li data-step="2"><b>07</b><span>Peu d’effort, beaucoup de bénéfices</span></li>
+            <li data-step="2"><b>08</b><span>Une série de scripts, pas un seul</span></li>
+          </ol>
+          <div class="card cert-bar" data-step="3" data-anim="rise"><p>Ordre de la certitude&nbsp;: <span class="u"><span><span class="hl">produit</span>, puis <span class="hl">toi</span>, puis <span class="hl">l’entreprise</span></span><i class="fa" data-step="3"></i></span>.</p></div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 5:20 → 6:20 · 3 clics</p>
+            <p>Présentation : les 8 clés d’un script.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 01 Garder des arguments en réserve. 02 Des bénéfices, pas des caractéristiques. 03 Des points d’arrêt : « Tu me suis ? » 04 Écrit comme on parle.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 05 Un enchaînement fluide. 06 Honnête et éthique. 07 Peu d’effort, beaucoup de bénéfices. 08 Une série de scripts, pas un seul.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Ordre de la certitude : produit, puis toi, puis l’entreprise.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-loop" data-title="La vente commence à la première objection">
+          <span class="eyebrow" data-anim="fade">Le looping</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>La vente commence à la</span></span><span class="ln"><span>première objection</span></span></h2>
+          <div class="flow">
+            <div class="card fl-box" data-step="1"><b>1</b><p>Accueillir l’objection</p><i class="fa" data-step="1"></i></div>
+            <svg class="fl-arr" data-step="2" data-anim="draw" viewBox="0 0 70 24" aria-hidden="true"><path d="M8 12h52"/><path d="M50 4l10 8-10 8"/></svg>
+            <div class="card fl-box" data-step="2"><b>2</b><p>L’idée lui plaît&#8209;elle&#8239;?</p><i class="fa" data-step="2"></i></div>
+            <svg class="fl-arr" data-step="3" data-anim="draw" viewBox="0 0 70 24" aria-hidden="true"><path d="M8 12h52"/><path d="M50 4l10 8-10 8"/></svg>
+            <div class="card fl-box" data-step="3"><b>3</b><p>Argument nouveau</p><i class="fa" data-step="3"></i></div>
+            <svg class="fl-arr" data-step="4" data-anim="draw" viewBox="0 0 70 24" aria-hidden="true"><path d="M8 12h52"/><path d="M50 4l10 8-10 8"/></svg>
+            <div class="card fl-box" data-step="4"><b>4</b><p>Redemander la vente</p><i class="fa" data-step="4"></i></div>
+          </div>
+          <svg class="fl-loop" data-step="5" data-anim="draw" viewBox="0 0 1680 104" aria-hidden="true"><path d="M1496 4V36C1496 74 1472 88 1436 88H244C208 88 184 74 184 36V10"/><path d="M170 24L184 8L198 24"/></svg>
+          <p class="closing" data-step="5" data-anim="words" style="margin-top:22px">Chaque boucle vise une cible&nbsp;: <span class="hl">un des 3 Dix</span>, <span class="hl">le seuil d’action</span> ou <span class="hl">la douleur</span>.</p>
+          <aside class="notes">
+            <p class="n-meta">Greg · 6:20 → 7:20 · 5 clics</p>
+            <p>Le looping : la vente commence à la première objection.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 1, accueillir l’objection.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 2, l’idée lui plaît-elle ?</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> 3, argument nouveau.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> 4, redemander la vente.</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> La boucle repart. Chaque boucle vise une cible : un des 3 Dix, le seuil d’action ou la douleur.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-levers" data-title="Seuil d’action et douleur">
+          <span class="eyebrow" data-anim="fade">Les deux leviers</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Seuil d’action et douleur</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="duo">
+            <div class="card grid-bg lev" data-step="1" data-anim="rise">
+              <div class="lev-h"><svg viewBox="0 0 52 52" aria-hidden="true"><path d="M6 40h40"/><path d="M26 6v24"/><path d="M17 21l9 9 9-9"/></svg><h3>Abaisser le seuil d’action</h3></div>
+              <ul>
+                <li data-step="1" data-anim="left">Garantie satisfait ou remboursé</li>
+                <li data-step="1" data-anim="left">Délai de rétractation</li>
+                <li data-step="1" data-anim="left">Rassurer&nbsp;: « je t’accompagne à chaque étape »</li>
+                <li data-step="1" data-anim="left">Montrer que le pire scénario reste supportable</li>
+              </ul>
+              <i class="fa" data-step="1" style="position:absolute;left:50px;bottom:28px;width:60px"></i>
+            </div>
+            <div class="card warm lev" data-step="2" data-anim="rise">
+              <div class="lev-h hl"><svg viewBox="0 0 52 52" aria-hidden="true"><path d="M6 12h40"/><path d="M26 46V22"/><path d="M17 31l9-9 9 9"/></svg><h3>Augmenter la douleur</h3></div>
+              <ul>
+                <li data-step="2" data-anim="left">Qui ressent sa douleur agit vite</li>
+                <li data-step="2" data-anim="left">Qui la nie agit lentement</li>
+                <li data-step="2" data-anim="left">La douleur sert à aider à bien décider, jamais à écraser</li>
+              </ul>
+              <i class="fa" data-step="2" style="position:absolute;left:50px;bottom:28px;width:60px"></i>
+            </div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 7:20 → 8:10 · 2 clics</p>
+            <p>Les deux leviers : seuil d’action et douleur.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Abaisser le seuil d’action : garantie satisfait ou remboursé, délai de rétractation, rassurer (« je t’accompagne à chaque étape »), montrer que le pire scénario reste supportable.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Augmenter la douleur : qui ressent sa douleur agit vite, qui la nie agit lentement. La douleur sert à aider à bien décider, jamais à écraser.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-syntax" data-title="De l’ouverture au client à vie">
+          <span class="eyebrow" data-anim="fade">La syntaxe complète</span>
+          <h2 class="t s" data-anim="lines"><span class="ln"><span>De l’ouverture au client à vie</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="syn">
+            <div class="syn-c" data-step="1"><b>01</b><span>Les 4 premières secondes</span></div>
+            <div class="syn-c" data-step="1"><b>02</b><span>Créer un rapport fort</span></div>
+            <div class="syn-c" data-step="1"><b>03</b><span>Collecter les infos</span></div>
+            <div class="syn-c" data-step="1"><b>04</b><span>Transition vers la présentation</span></div>
+            <div class="syn-c" data-step="1"><b>05</b><span>Demander la vente</span></div>
+            <div class="syn-c" data-step="1"><b>06</b><span>Dévier et boucler</span></div>
+            <div class="syn-c" data-step="1"><b>07</b><span>Abaisser le seuil d’action</span></div>
+            <div class="syn-c" data-step="1"><b>08</b><span>Ajouter de la douleur</span></div>
+            <div class="syn-c key" data-step="2" data-anim="wipe"><span class="wipe"></span><span class="wipe-c"><b>09</b><span>Closer</span></span><i class="fa" data-step="2"></i></div>
+            <div class="syn-c" data-step="2"><b>10</b><span>Obtenir des recommandations</span></div>
+            <div class="syn-c" data-step="2"><b>11</b><span>Fidéliser à vie</span></div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 8:10 → 9:00 · 2 clics</p>
+            <p>La syntaxe complète : de l’ouverture au client à vie.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> 01 Les 4 premières secondes. 02 Créer un rapport fort. 03 Collecter les infos. 04 Transition vers la présentation. 05 Demander la vente. 06 Dévier et boucler. 07 Abaisser le seuil d’action. 08 Ajouter de la douleur.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> 09 Closer. 10 Obtenir des recommandations. 11 Fidéliser à vie.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-mlm" data-title="Quel Dix bloque ?" data-foot="Bonus : transposition terrain, pas dans le livre">
+          <span class="eyebrow" data-anim="fade">Application terrain · MLM</span>
+          <h2 class="t" data-anim="lines"><span class="ln"><span>Quel Dix bloque&#8239;?</span></span></h2>
+          <i class="fa" style="--w:200px;margin-top:24px"></i>
+          <div class="tbl" style="--cols:500px 400px 1fr">
+            <div class="tr th" data-anim="fade"><span>Objection</span><span class="hl">Dix trop bas</span><span>Boucle à lancer</span></div>
+            <div class="tr" data-step="1"><span>« C’est une pyramide »</span><span>Entreprise</span><span>Preuves&nbsp;: structure, ancienneté, modèle de rémunération</span></div>
+            <div class="tr" data-step="2"><span>« J’ai pas le temps »</span><span>Produit + seuil d’action</span><span>Démarrer est simple, tu accompagnes</span></div>
+            <div class="tr" data-step="3"><span>« Je vais réfléchir »</span><span>Un des trois</span><span>L’idée lui plaît-elle&#8239;? Puis isoler le blocage</span></div>
+            <div class="tr" data-step="4"><span>« J’ai pas l’argent »</span><span>Douleur</span><span>Lui faire chiffrer ce que lui coûte sa situation</span></div>
+            <div class="tr" data-step="5"><span>« J’en parle à ma femme »</span><span>Toi ou entreprise</span><span>Vérifier sa propre conviction d’abord</span></div>
+          </div>
+          <aside class="notes">
+            <p class="n-meta">Greg · 9:00 → 10:20 · 5 clics</p>
+            <p>Application terrain, MLM : quel Dix bloque ? (Bonus : transposition terrain, pas dans le livre.)</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> « C’est une pyramide » : Dix entreprise. Boucle : preuves, structure, ancienneté, modèle de rémunération.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> « J’ai pas le temps » : produit + seuil d’action. Boucle : démarrer est simple, tu accompagnes.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> « Je vais réfléchir » : un des trois. Boucle : l’idée lui plaît-elle ? Puis isoler le blocage.</p>
+            <p data-step="4"><span class="n-cue">Clic 4</span> « J’ai pas l’argent » : douleur. Boucle : lui faire chiffrer ce que lui coûte sa situation.</p>
+            <p data-step="5"><span class="n-cue">Clic 5</span> « J’en parle à ma femme » : toi ou entreprise. Boucle : vérifier sa propre conviction d’abord.</p>
+          </aside>
+        </article>
+
+        <article class="slide s-end" data-title="Diagnostique le Dix. Remonte-le. Redemande." data-foot="none">
+          <i class="fa v"></i>
+          <span class="eyebrow" data-anim="fade">À retenir</span>
+          <h2 class="end-t">
+            <span class="ln" data-anim="lines"><span>Diagnostique le Dix.</span></span>
+            <span class="ln"><span class="lm" data-step="1" data-anim="lines"><span>Remonte-le.</span></span> <span class="lm" data-step="2" data-anim="lines"><span>Redemande.</span></span></span>
+          </h2>
+          <p class="lede" data-step="3" data-anim="words">Et ne vends qu’à ceux que ton produit aide vraiment.</p>
+          <img class="end-logo" src="assets/sparta-logo.png" alt="SPARTA" data-step="3" data-anim="fade" data-at="0.8">
+          <aside class="notes">
+            <p class="n-meta">Greg · 10:20 → 11:00 · 3 clics</p>
+            <p>À retenir. Diagnostique le Dix.</p>
+            <p data-step="1"><span class="n-cue">Clic 1</span> Remonte-le.</p>
+            <p data-step="2"><span class="n-cue">Clic 2</span> Redemande.</p>
+            <p data-step="3"><span class="n-cue">Clic 3</span> Et ne vends qu’à ceux que ton produit aide vraiment.</p>
+          </aside>
+        </article>
+      </section>
+
+    </main>
+
+    <div class="fil" id="fil" aria-hidden="true"><i class="fil-a"></i><i class="fil-b"></i></div>
+    <footer class="foot" id="foot" aria-hidden="true"><span class="f-l"></span><span class="f-r"></span></footer>
+  </div>
+  <div class="blackout" id="blackout" aria-hidden="true"></div>
+</div>
+
+<script src="assets/gsap.min.js"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+  const gsap = window.gsap;
+  if (!gsap) {
+    document.body.insertAdjacentHTML('beforeend',
+      '<p class="fatal">Animations indisponibles : le fichier <b>assets/gsap.min.js</b> est introuvable. Garde le dossier « assets » à côté de index.html.</p>');
+    return;
+  }
+
+  const PRESENTER = new URLSearchParams(location.search).has('presenter');
+  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DIM = 0.3;
+  const APP = 'super-sunday-deck';
+  let stageScale = 1;
+
+  const viewport = $('#viewport'), stage = $('#stage'), deck = $('#deck');
+  const fil = $('#fil'), filA = $('.fil-a', fil), filB = $('.fil-b', fil);
+  const halo = $('#halo'), foot = $('#foot'), footL = $('.f-l', foot), footR = $('.f-r', foot);
+  const blackout = $('#blackout');
+
+  const num = (v, d) => (v == null || v === '' ? d : Number(v));
+  const clean = s => s.replace(/\s+/g, ' ').trim();
+  const pad = n => String(n).padStart(2, '0');
+
+  /* ---------- Lecture du deck ---------- */
+  const modules = $$('.module', deck).map((el, i) => ({
+    el, i,
+    key: el.dataset.module,
+    name: el.dataset.name || '',
+    speaker: el.dataset.speaker || '',
+    minutes: num(el.dataset.minutes, 0),
+    foot: el.dataset.foot || '',
+    halo: (el.dataset.halo || '960,540').split(',').map(Number)
+  }));
+
+  // Découpe un texte en mots animables sans toucher aux éléments imbriqués (surlignages, ancres du fil).
+  function splitWords(root) {
+    [...root.childNodes].forEach(node => {
+      if (node.nodeType === 3) {
+        if (!node.textContent.trim()) return;
+        const frag = document.createDocumentFragment();
+        node.textContent.split(/([ \t\n\r]+)/).forEach(part => {
+          if (!part) return;
+          if (/^[ \t\n\r]+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+          const w = document.createElement('span');
+          w.className = 'w';
+          w.textContent = part;
+          frag.appendChild(w);
+        });
+        node.replaceWith(frag);
+      } else if (node.nodeType === 1 && !node.classList.contains('fa') && node.tagName !== 'BR') {
+        splitWords(node);
+      }
+    });
+  }
+  $$('[data-anim="words"]', deck).forEach(splitWords);
+
+  // Découpe le texte d'un élément simple en cases inline-block, par mots ou par lettres.
+  // Les espaces insécables (avant « ? », « : »…) restent collés à leur mot.
+  function splitText(target, cls, byChar) {
+    const text = target.textContent;
+    target.textContent = '';
+    (byChar ? [...text] : text.split(/([ \t\n\r]+)/)).forEach(part => {
+      if (!part) return;
+      if (!byChar && /^[ \t\n\r]+$/.test(part)) { target.append(' '); return; }
+      const s = document.createElement('span');
+      s.className = cls;
+      s.textContent = byChar && part === ' ' ? ' ' : part;
+      target.append(s);
+    });
+  }
+
+  // Couverture : VENDRE monte lettre à lettre.
+  $$('[data-anim="letters"]', deck).forEach(h => splitText(h.querySelector(':scope > .ln > span'), 'ch', true));
+  // Titres : chaque mot remonte de son masque.
+  $$('[data-anim="lines"]', deck).forEach(f => {
+    (f.matches('.ln,.lm') ? [f.firstElementChild] : $$('.ln>span,.lm>span', f)).forEach(s => splitText(s, 'lw'));
+  });
+  // Surtitres : les lettres s'allument une à une.
+  $$('.eyebrow[data-anim="fade"]', deck).forEach(e => { e.dataset.anim = 'chars'; splitText(e, 'ec', true); });
+  // Numéros : le chiffre remonte de son masque quand son bloc apparaît.
+  $$('.band-n, .tri-n, .iq b, .rules b, .syn-c b, .toc b, .fl-box b, .cab-l b', deck).forEach(n => {
+    n.classList.add('roll');
+    n.innerHTML = '<span class="rl">' + n.innerHTML + '</span>';
+  });
+  // Lignes de tableau et de liste : un reflet champagne les parcourt quand elles apparaissent.
+  $$('.tr:not(.th), .rules li, .toc li', deck).forEach(r => r.insertAdjacentHTML('beforeend', '<i class="scan" aria-hidden="true"></i>'));
+
+  function subTargets(f) {
+    switch (f.anim) {
+      case 'lines': return $$('.lw', f.el);
+      case 'chars': return $$('.ec', f.el);
+      case 'words': return $$('.w', f.el);
+      case 'draw': case 'check': return f.el.matches('path,rect,circle,line') ? [f.el] : $$('path, rect, circle, line', f.el);
+      case 'ticks': return [...f.el.children];
+      case 'wipe': return $$('.wipe', f.el);
+      case 'letters': return $$(':scope > .ln .ch', f.el);
+      case 'sweep': return [f.el.firstElementChild];
+      default: return [];
+    }
+  }
+
+  const slides = $$('.slide', deck).map((el, i) => {
+    const mod = modules.find(m => m.el.contains(el));
+    const frags = $$('[data-anim],[data-step]', el)
+      .filter(n => !n.closest('.notes') && !n.classList.contains('fa'))
+      .map(n => {
+        const f = {
+          el: n,
+          step: num(n.dataset.step, 0),
+          anim: n.dataset.anim || 'rise',
+          dim: num(n.dataset.dim, null),
+          undim: num(n.dataset.undim, null),
+          at: num(n.dataset.at, null)
+        };
+        f.sub = subTargets(f);
+        f.wc = $$('.wipe-c', n);
+        if (f.anim === 'count') f.to = num(n.dataset.to, Number(n.textContent) || 0);
+        // Détails animés avec le bloc : uniquement ceux qui n'appartiennent pas à un fragment imbriqué.
+        const own = x => x.closest('[data-anim],[data-step]') === n;
+        f.rolls = $$('.roll > .rl', n).filter(own);
+        f.scans = $$(':scope > .scan', n);
+        f.icons = f.anim === 'draw' || f.anim === 'check' ? [] : $$('svg path, svg circle, svg rect, svg line', n).filter(own);
+        return f;
+      });
+    const anchors = $$('.fa', el).map(a => ({ el: a, step: num(a.dataset.step, 0) }));
+    const max = Math.max(0, ...frags.map(f => f.step), ...anchors.map(a => a.step));
+    return { el, i, mod, frags, anchors, max, title: el.dataset.title || '', foot: el.dataset.foot };
+  });
+
+  // Miniatures du sommaire : copies figées des slides, prises avant que GSAP ne masque quoi que ce soit.
+  const thumbs = slides.map(S => {
+    const c = S.el.cloneNode(true);
+    c.querySelectorAll('.notes').forEach(n => n.remove());
+    c.querySelectorAll('[data-step],[data-anim]').forEach(n => {
+      ['data-step', 'data-anim', 'data-dim', 'data-undim', 'data-at', 'data-goto'].forEach(a => n.removeAttribute(a));
+    });
+    c.classList.add('is-thumb');
+    c.setAttribute('aria-hidden', 'true');
+    return c;
+  });
+
+  /* ---------- États des fragments ---------- */
+  const pathLen = p => { try { return p.getTotalLength(); } catch (e) { return 400; } };
+
+  function opFor(f, s) {
+    if (s < f.step) return 0;
+    if (f.dim != null && s >= f.dim && (f.undim == null || s < f.undim)) return DIM;
+    return 1;
+  }
+
+  const setIcons = (f, drawn) => f.icons.forEach(p => {
+    const L = pathLen(p);
+    gsap.set(p, { strokeDasharray: L, strokeDashoffset: drawn ? 0 : L });
+  });
+
+  function details(f, visible) {
+    gsap.killTweensOf([...f.rolls, ...f.scans, ...f.icons]);
+    if (f.rolls.length) gsap.set(f.rolls, { yPercent: visible ? 0 : 105 });
+    if (f.scans.length) gsap.set(f.scans, { opacity: 0, scaleX: 0 });
+    setIcons(f, visible);
+  }
+
+  function hide(f) {
+    const { el, sub } = f;
+    gsap.killTweensOf(el);
+    if (sub.length) gsap.killTweensOf(sub);
+    gsap.set(el, { opacity: 0, x: 0, y: 0, scale: 1, rotation: 0 });
+    details(f, false);
+    switch (f.anim) {
+      case 'lines': gsap.set(sub, { yPercent: 112, rotation: 0 }); break;
+      case 'chars': gsap.set(sub, { opacity: 0, x: 0 }); break;
+      case 'words': gsap.set(sub, { opacity: 0, y: 0 }); break;
+      case 'count': el.textContent = '0'; break;
+      case 'draw': case 'check':
+        sub.forEach(p => { const L = pathLen(p); gsap.set(p, { strokeDasharray: L, strokeDashoffset: L }); });
+        break;
+      case 'ticks': gsap.set(sub, { opacity: 0.14 }); break;
+      case 'wipe': gsap.set(sub, { scaleX: 0 }); gsap.set(f.wc, { opacity: 0, y: 0 }); break;
+      case 'letters': gsap.set(sub, { yPercent: 115, rotation: 0 }); break;
+      case 'sweep': gsap.set(sub, { x: 0 }); break;
+    }
+  }
+
+  function show(f, op) {
+    const { el, sub } = f;
+    gsap.killTweensOf(el);
+    if (sub.length) gsap.killTweensOf(sub);
+    gsap.set(el, { opacity: op, x: 0, y: 0, scale: 1, rotation: 0 });
+    details(f, true);
+    switch (f.anim) {
+      case 'lines': gsap.set(sub, { yPercent: 0, rotation: 0 }); break;
+      case 'chars': gsap.set(sub, { opacity: 1, x: 0 }); break;
+      case 'words': gsap.set(sub, { opacity: 1, y: 0 }); break;
+      case 'count': el.textContent = f.to; break;
+      case 'draw': case 'check':
+        sub.forEach(p => { const L = pathLen(p); gsap.set(p, { strokeDasharray: L, strokeDashoffset: 0 }); });
+        break;
+      case 'ticks': gsap.set(sub, { opacity: 1 }); break;
+      case 'wipe': gsap.set(sub, { scaleX: 1 }); gsap.set(f.wc, { opacity: 1, y: 0 }); break;
+      case 'letters': gsap.set(sub, { yPercent: 0, rotation: 0 }); break;
+      // Le reflet est un passage : à l'état final, il n'est plus visible.
+      case 'sweep': gsap.set(el, { opacity: 0 }); gsap.set(sub, { x: 0 }); break;
+    }
+  }
+
+  function enter(f, op, tl, t) {
+    const { el, sub } = f;
+    if (REDUCE) {
+      show(f, op);
+      if (f.anim === 'sweep') return;
+      gsap.set(el, { opacity: 0 });
+      tl.to(el, { opacity: op, duration: 0.35, ease: 'power1.out' }, t);
+      return;
+    }
+    switch (f.anim) {
+      case 'letters':
+        tl.set(el, { opacity: op }, t);
+        tl.fromTo(sub, { yPercent: 115, rotation: 7 }, { yPercent: 0, rotation: 0, duration: 1.3, ease: 'expo.out', stagger: { each: 0.075, from: 'center' } }, t);
+        break;
+      case 'sweep': {
+        // La fenêtre traverse le mot pendant que son contenu recule d'autant : seul le texte s'éclaire.
+        const inner = sub[0], p = { x: 0 };
+        tl.set(el, { opacity: 1 }, t);
+        tl.fromTo(p, { x: -el.offsetWidth }, {
+          x: inner.offsetWidth, duration: 1.6, ease: 'power2.inOut',
+          onUpdate: () => { gsap.set(el, { x: p.x }); gsap.set(inner, { x: -p.x }); },
+          onComplete: () => gsap.set(el, { opacity: 0 })
+        }, t);
+        break;
+      }
+      case 'fade':
+        tl.fromTo(el, { opacity: 0 }, { opacity: op, duration: 0.9, ease: 'power2.out' }, t); break;
+      case 'left':
+        tl.fromTo(el, { opacity: 0, x: -44 }, { opacity: op, x: 0, duration: 0.9, ease: 'expo.out' }, t); break;
+      case 'pop':
+        tl.fromTo(el, { opacity: 0, scale: 0.4 }, { opacity: op, scale: 1, transformOrigin: '50% 50%', duration: 0.7, ease: 'back.out(2)' }, t); break;
+      case 'stack':
+        tl.fromTo(el, { opacity: 0, y: 90, rotation: -1.2 }, { opacity: op, y: 0, rotation: 0, duration: 1, ease: 'expo.out' }, t); break;
+      case 'lines':
+        tl.set(el, { opacity: op }, t);
+        tl.fromTo(sub, { yPercent: 112, rotation: 4 }, { yPercent: 0, rotation: 0, duration: 1.1, ease: 'expo.out', stagger: 0.055 }, t);
+        break;
+      case 'chars':
+        tl.set(el, { opacity: op }, t);
+        tl.fromTo(sub, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.45, ease: 'power2.out', stagger: 0.016 }, t);
+        break;
+      case 'right':
+        tl.fromTo(el, { opacity: 0, x: 44 }, { opacity: op, x: 0, duration: 0.9, ease: 'expo.out' }, t); break;
+      case 'words':
+        tl.set(el, { opacity: op }, t);
+        tl.fromTo(sub, { opacity: 0, y: 14 }, { opacity: 0.18, y: 0, duration: 0.45, ease: 'power2.out', stagger: 0.006 }, t);
+        tl.to(sub, { opacity: 1, duration: 0.5, ease: 'power1.out', stagger: 0.05 }, t + 0.25);
+        break;
+      case 'count': {
+        const o = { v: 0 };
+        tl.fromTo(el, { opacity: 0, y: 24 }, { opacity: op, y: 0, duration: 0.8, ease: 'expo.out' }, t);
+        tl.to(o, { v: f.to, duration: 1.1, ease: 'power2.out', onUpdate: () => { el.textContent = Math.round(o.v); } }, t);
+        break;
+      }
+      case 'draw':
+        tl.set(el, { opacity: op }, t);
+        tl.to(sub, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut', stagger: 0.12 }, t);
+        break;
+      case 'check':
+        tl.fromTo(el, { opacity: 0, scale: 0.6 }, { opacity: op, scale: 1, duration: 0.6, ease: 'back.out(1.8)' }, t);
+        tl.to(sub, { strokeDashoffset: 0, duration: 0.5, ease: 'power2.out' }, t + 0.2);
+        break;
+      case 'ticks':
+        tl.set(el, { opacity: op }, t);
+        tl.to(sub, { opacity: 1, duration: 0.18, ease: 'none', stagger: 0.08 }, t + 0.15);
+        break;
+      case 'wipe':
+        tl.set(el, { opacity: op }, t);
+        tl.to(sub, { scaleX: 1, duration: 0.85, ease: 'expo.inOut' }, t);
+        tl.fromTo(f.wc, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, t + 0.5);
+        break;
+      default:
+        tl.fromTo(el, { opacity: 0, y: 34 }, { opacity: op, y: 0, duration: 0.9, ease: 'expo.out' }, t);
+    }
+    // Les détails du bloc suivent son entrée : chiffres qui roulent, reflet de ligne, icônes qui se dessinent.
+    if (f.rolls.length) tl.fromTo(f.rolls, { yPercent: 105 }, { yPercent: 0, duration: 0.9, ease: 'expo.out', stagger: 0.05 }, t + 0.12);
+    if (f.scans.length) {
+      tl.fromTo(f.scans, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.9, ease: 'expo.inOut' }, t);
+      tl.to(f.scans, { opacity: 0, duration: 0.8, ease: 'power1.out' }, t + 0.85);
+    }
+    if (f.icons.length) tl.to(f.icons, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut', stagger: 0.06 }, t + 0.15);
+  }
+
+  // Joue l'étape k : apparitions de l'étape, puis mise en retrait / retour des éléments déjà visibles.
+  function playStep(S, k, tl, base, quick) {
+    let n = 0;
+    S.frags.forEach(f => {
+      if (f.step === k) {
+        // Mouvement réduit ou saut : pas de mise en scène différée, tout arrive tout de suite.
+        enter(f, opFor(f, k), tl, base + (f.at != null && !REDUCE && !quick ? f.at : n++ * 0.085));
+      } else if (f.step < k) {
+        const a = opFor(f, k - 1), b = opFor(f, k);
+        if (a !== b) tl.to(f.el, { opacity: b, duration: 0.5, ease: 'power2.out' }, base);
+      }
+    });
+  }
+
+  function rewind(S, from, to, tl) {
+    S.frags.forEach(f => {
+      if (f.step > to) {
+        if (f.step <= from) tl.to(f.el, { opacity: 0, duration: 0.22, ease: 'power1.in', onComplete: () => hide(f) }, 0);
+      } else {
+        const a = opFor(f, from), b = opFor(f, to);
+        if (a !== b) tl.to(f.el, { opacity: b, duration: 0.4, ease: 'power2.out' }, 0);
+      }
+    });
+  }
+
+  const setState = (S, s) => S.frags.forEach(f => (f.step <= s ? show(f, opFor(f, s)) : hide(f)));
+
+  /* ---------- Les fils de soie : fond WebGL de toute la présentation, ils suivent le fil ---------- */
+  const THREADS_VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}';
+  const THREADS_FS = [
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH',
+    'precision highp float;',
+    '#else',
+    'precision mediump float;',
+    '#endif',
+    'uniform vec2 uRes;',
+    'uniform float uTime;',
+    'uniform float uTension;',
+    'uniform float uFade;',
+    'uniform vec3 uLine;', // position du fil, début, fin (le long du fil)
+    'uniform float uVert;', // 1 : fil vertical, lu de haut en bas
+    'uniform vec2 uMouse;',
+    'float h(float n){return fract(sin(n)*43758.5453123);}',
+    'void main(){',
+    '  vec2 uv0=gl_FragCoord.xy/uRes;',
+    '  vec2 uv=mix(uv0,vec2(1.0-uv0.y,uv0.x),uVert);',
+    '  vec2 m=mix(uMouse,vec2(1.0-uMouse.y,uMouse.x),uVert);',
+    '  float ax=uv.x*mix(uRes.x/uRes.y,uRes.y/uRes.x,uVert);',
+    '  float px=1.2/mix(uRes.y,uRes.x,uVert);',
+    // Tension locale : le nœud avance du début vers la fin du fil, puis les fils s'effilochent au-delà.
+    '  float front=mix(uLine.y,uLine.z,uTension);',
+    '  float tl=uTension*smoothstep(uLine.y-0.07,uLine.y+0.01,uv.x)*(1.0-smoothstep(front,front+0.34,uv.x));',
+    '  float spread=mix(0.40,0.007,tl);',
+    '  float ampK=mix(0.10,0.002,tl);',
+    '  float dx=(uv.x-m.x)*5.0;',
+    '  float pull=exp(-dx*dx)*(1.0-0.85*tl);',
+    '  vec3 col=vec3(0.0);',
+    '  float acc=0.0;',
+    '  for(int i=0;i<32;i++){',
+    '    float fi=float(i);',
+    '    float r1=h(fi*12.9898+1.3);',
+    '    float r2=h(fi*78.233+4.1);',
+    '    float r3=h(fi*37.719+9.7);',
+    '    float amp=ampK*(0.45+r2);',
+    '    float y=uLine.x+(r1-0.5)*spread',
+    '      +amp*sin(ax*(1.1+r3*2.4)+uTime*(0.22+r2*0.35)+r1*6.2831)',
+    '      +amp*0.5*sin(ax*(2.9+r1*2.1)-uTime*(0.17+r3*0.28)+r2*6.2831);',
+    '    y+=(m.y-y)*0.14*pull;',
+    '    float d=abs(uv.y-y);',
+    '    float w=max(0.0010+0.0009*r3,px);',
+    '    float v=(1.0-smoothstep(0.0,w,d))+exp(-d*mix(70.0,150.0,tl))*mix(0.16,0.05,tl);',
+    '    v*=(0.3+0.7*r2)*mix(1.0,0.22,tl);',
+    '    col+=v*mix(vec3(0.831,0.749,0.580),vec3(0.933,0.910,0.863),step(0.78,r3));',
+    '    acc+=v;',
+    '  }',
+    '  float edge=smoothstep(0.0,0.06,uv.x)*(1.0-smoothstep(0.86,1.0,uv.x));',
+    '  float I=clamp(acc*0.4*edge,0.0,1.0)*uFade;',
+    '  vec3 c=acc>0.0001?col/acc:vec3(0.0);',
+    '  gl_FragColor=vec4(c*I,I);',
+    '}'
+  ].join('\n');
+
+  // Intensité des fils par type de slide : forte sur les grandes phrases, très faible derrière les tableaux.
+  const THREAD_LEVEL = {
+    's-cover': 1, 's-end': 0.8, 's-anchor': 0.7, 's-code': 0.6, 's-switch': 0.55, 's-hook': 0.5,
+    's-toc': 0.45, 's-drill': 0.45, 's-five': 0.16, 's-tri': 0.16, 's-mlm': 0.14, 's-convo': 0.18,
+    's-rules': 0.2, 's-scene': 0.22
+  };
+  const levelFor = S => {
+    for (const k in THREAD_LEVEL) if (S.el.classList.contains(k)) return THREAD_LEVEL[k];
+    return 0.28;
+  };
+
+  const NO_THREADS = { follow() {}, hide() {}, intro() {}, level() {}, reweave() {}, start() {}, pause() {}, resize() {} };
+
+  function createThreads(canvas) {
+    let gl = null;
+    try { gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, powerPreference: 'high-performance' }); } catch (e) { gl = null; }
+    const fail = () => { canvas.remove(); return NO_THREADS; };
+    if (!gl) return fail();
+    const shader = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+    };
+    const vs = shader(gl.VERTEX_SHADER, THREADS_VS), fs = shader(gl.FRAGMENT_SHADER, THREADS_FS);
+    if (!vs || !fs) return fail();
+    const prog = gl.createProgram();
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return fail();
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const U = {};
+    ['uRes', 'uTime', 'uTension', 'uFade', 'uLine', 'uVert', 'uMouse'].forEach(n => { U[n] = gl.getUniformLocation(prog, n); });
+
+    const FAR = [2, 0.5]; // souris hors champ : aucun fil n'est attiré
+    const st = {
+      tension: 1, fade: 0, level: 0.3, ly: 0.48, lx0: 0.08, lx1: 0.39, vert: 0, target: null,
+      q: PRESENTER ? 0.45 : 0.85, running: false, raf: 0, n: 0, sum: 0, last: 0, odd: false,
+      t0: performance.now(), m: FAR.slice(), mt: FAR.slice()
+    };
+
+    function size() {
+      const q = Math.min(1, stageScale * (window.devicePixelRatio || 1)) * st.q;
+      const w = Math.max(2, Math.round(1920 * q)), hgt = Math.max(2, Math.round(1080 * q));
+      if (canvas.width !== w || canvas.height !== hgt) { canvas.width = w; canvas.height = hgt; }
+      gl.viewport(0, 0, w, hgt);
+    }
+    function draw(now) {
+      const t = (now - st.t0) / 1000;
+      const breathe = REDUCE ? 1 : 1 - 0.035 * (0.5 + 0.5 * Math.sin(t * 0.55));
+      st.m[0] += (st.mt[0] - st.m[0]) * 0.06;
+      st.m[1] += (st.mt[1] - st.m[1]) * 0.06;
+      gl.uniform2f(U.uRes, canvas.width, canvas.height);
+      gl.uniform1f(U.uTime, REDUCE ? 4 : t);
+      gl.uniform1f(U.uTension, st.tension * breathe);
+      gl.uniform1f(U.uFade, st.fade * st.level);
+      gl.uniform3f(U.uLine, st.ly, st.lx0, st.lx1);
+      gl.uniform1f(U.uVert, st.vert);
+      gl.uniform2f(U.uMouse, st.m[0], st.m[1]);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    function loop(now) {
+      if (!st.running) return;
+      st.raf = requestAnimationFrame(loop);
+      if (st.last) {
+        // Qualité adaptative : si l'ordinateur de la salle peine, le canvas baisse de résolution.
+        st.sum += now - st.last;
+        st.n++;
+        if (st.n === 45) {
+          if (st.sum / st.n > 24 && st.q > 0.35) { st.q *= 0.75; size(); }
+          st.n = 0;
+          st.sum = 0;
+        }
+      }
+      st.last = now;
+      // Fond discret : 30 images par seconde suffisent. Couverture et grandes phrases : 60.
+      st.odd = !st.odd;
+      if (st.level < 0.6 && st.odd) return;
+      draw(now);
+    }
+    // En mouvement réduit, aucune boucle : une seule image à chaque changement.
+    const redraw = () => { if (REDUCE) { size(); draw(performance.now()); } };
+    const place = tg => Object.assign(st, { ly: tg.ly, lx0: tg.lx0, lx1: tg.lx1, vert: tg.vert });
+
+    addEventListener('pointermove', e => {
+      if (!st.running) return;
+      const r = canvas.getBoundingClientRect();
+      if (!r.width) return;
+      st.mt = [(e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height];
+    }, { passive: true });
+
+    return {
+      // Les fils rejoignent la nouvelle position du fil ; « brk » : ils se défont d'un coup.
+      follow(tg, dur, brk) {
+        st.target = tg;
+        gsap.killTweensOf(st, 'ly,lx0,lx1,tension');
+        if (REDUCE) { place(tg); st.tension = brk ? 0.35 : 1; st.fade = 1; redraw(); return; }
+        if (tg.vert !== st.vert) {
+          gsap.killTweensOf(st, 'fade');
+          gsap.to(st, {
+            fade: 0, duration: 0.3, ease: 'power1.in',
+            onComplete: () => {
+              place(tg);
+              st.tension = 0.4;
+              gsap.to(st, { fade: 1, duration: 0.8, ease: 'power2.out' });
+              gsap.to(st, { tension: 1, duration: 1.6, ease: 'expo.inOut' });
+            }
+          });
+          return;
+        }
+        gsap.to(st, { ly: tg.ly, lx0: tg.lx0, lx1: tg.lx1, duration: dur, ease: 'expo.inOut' });
+        if (brk) gsap.to(st, { tension: 0.12, duration: 0.6, ease: 'power4.out' });
+        else gsap.to(st, { tension: 1, duration: dur + 0.3, ease: 'expo.inOut' });
+        if (st.fade < 1) {
+          gsap.killTweensOf(st, 'fade');
+          gsap.to(st, { fade: 1, duration: 0.8, ease: 'power2.out' });
+        }
+      },
+      hide() {
+        gsap.killTweensOf(st, 'fade');
+        if (REDUCE) { st.fade = 0; redraw(); return; }
+        gsap.to(st, { fade: 0, duration: 0.7, ease: 'power1.in' });
+      },
+      // Couverture : « full » rejoue l'entrée complète, sinon le fil se renoue simplement.
+      intro(full) {
+        const tg = st.target;
+        if (!tg) return;
+        gsap.killTweensOf(st, 'tension,fade');
+        if (REDUCE) { place(tg); st.tension = 1; st.fade = 1; redraw(); return; }
+        if (full) {
+          gsap.killTweensOf(st, 'ly,lx0,lx1');
+          place(tg);
+          st.tension = 0;
+          st.fade = 0;
+          gsap.to(st, { fade: 1, duration: 1.4, ease: 'power2.out' });
+          gsap.to(st, { tension: 1, duration: 2.6, delay: 0.7, ease: 'expo.inOut' });
+        } else {
+          st.tension = Math.min(st.tension, 0.45);
+          gsap.to(st, { fade: 1, duration: 0.8, ease: 'power2.out' });
+          gsap.to(st, { tension: 1, duration: 1.6, ease: 'expo.inOut' });
+        }
+      },
+      level(v) {
+        gsap.killTweensOf(st, 'level');
+        if (REDUCE) { st.level = v; redraw(); return; }
+        gsap.to(st, { level: v, duration: 1, ease: 'power2.inOut' });
+      },
+      // Changement de partie : les fils se défont un instant, puis se renouent.
+      reweave() {
+        if (REDUCE) return;
+        gsap.killTweensOf(st, 'tension');
+        gsap.timeline().to(st, { tension: 0.3, duration: 0.55, ease: 'power2.in' }).to(st, { tension: 1, duration: 1.8, ease: 'expo.inOut' });
+      },
+      start() {
+        size();
+        if (REDUCE) { draw(performance.now()); return; }
+        if (st.running) return;
+        st.running = true;
+        st.last = 0;
+        st.raf = requestAnimationFrame(loop);
+      },
+      pause() { st.running = false; cancelAnimationFrame(st.raf); },
+      resize() { size(); redraw(); }
+    };
+  }
+
+  const threads = createThreads($('#threads'));
+
+  /* ---------- Le fil ---------- */
+  let filShown = false, filBroken = false;
+
+  function rectIn(el) {
+    let x = 0, y = 0, n = el;
+    while (n && n !== stage) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent; }
+    return { x, y, w: el.offsetWidth, h: el.offsetHeight };
+  }
+
+  function anchorOf(S, s) {
+    let best = null;
+    S.anchors.forEach(a => { if (a.step <= s && (!best || a.step >= best.step)) best = a; });
+    return best;
+  }
+
+  // Position du fil pour le shader : en fraction de la scène, mesurée le long du fil.
+  const threadTarget = (r, vertical) => vertical
+    ? { vert: 1, ly: (r.x + r.w / 2) / 1920, lx0: r.y / 1080, lx1: (r.y + r.h) / 1080 }
+    : { vert: 0, ly: 1 - (r.y + r.h / 2) / 1080, lx0: r.x / 1920, lx1: (r.x + r.w) / 1920 };
+
+  function moveFil(S, s, how) {
+    const a = anchorOf(S, s);
+    gsap.killTweensOf([fil, filA, filB]);
+    // Pas d'ancre, ou ancre « data-hide » : le fil s'efface (la conversation se ferme), les fils de soie aussi.
+    if (!a || a.el.hasAttribute('data-hide')) {
+      gsap.to(fil, { opacity: 0, duration: 0.5 });
+      filShown = false;
+      threads.hide();
+      return;
+    }
+    const r = rectIn(a.el), vertical = a.el.classList.contains('v');
+    const L = Math.max(4, vertical ? r.h : r.w);
+    const brk = a.el.hasAttribute('data-break');
+    const half = L / 2 / 1000;
+    const F = { x: vertical ? r.x + r.w / 2 : r.x, y: vertical ? r.y : r.y + r.h / 2, rotation: vertical ? 90 : 0 };
+    // Fil cassé : la moitié gauche se relève à peine, la droite décroche vers le bas.
+    const A = { x: 0, y: brk ? 8 : 0, rotation: brk ? -4 : 0, scaleX: half, opacity: 1 };
+    const B = { x: L / 2 - 1 + (brk ? 10 : 0), y: brk ? 26 : 0, rotation: brk ? 8 : 0, scaleX: half + 0.002, opacity: brk ? 0.5 : 1 };
+    const tg = threadTarget(r, vertical);
+
+    if (REDUCE || !filShown) {
+      const place = () => { gsap.set(fil, F); gsap.set(filA, A); gsap.set(filB, B); };
+      if (REDUCE && filShown) {
+        gsap.timeline().to(fil, { opacity: 0, duration: 0.15 }).add(place).to(fil, { opacity: 1, duration: 0.25 });
+      } else {
+        place();
+        gsap.fromTo(fil, { opacity: 0 }, { opacity: 1, duration: 0.6, delay: REDUCE ? 0 : num(a.el.dataset.delay, 0.3) });
+      }
+      filShown = true;
+      filBroken = brk;
+      threads.follow(tg, 0.9, brk);
+      return;
+    }
+    const d = how === 'jump' ? 0.7 : 1.15;
+    const snap = brk && !filBroken;
+    gsap.to(fil, { ...F, opacity: 1, duration: d, ease: 'expo.inOut' });
+    gsap.to(filA, { ...A, duration: snap ? 0.55 : d, ease: snap ? 'power4.out' : 'expo.inOut' });
+    gsap.to(filB, { ...B, duration: snap ? 0.55 : d, ease: snap ? 'power4.out' : 'expo.inOut' });
+    // Le fil casse : la salle encaisse le choc.
+    if (snap) gsap.fromTo(deck, { x: 0 }, { keyframes: { x: [0, -9, 7, -5, 3, 0] }, duration: 0.42, ease: 'power2.out' });
+    filBroken = brk;
+    threads.follow(tg, d, brk);
+  }
+
+  /* ---------- Rendu et navigation ---------- */
+  let cur = -1, step = 0, tl = null, introPlayed = false;
+
+  function settle() {
+    if (!tl) return;
+    const t = tl;
+    tl = null;
+    t.progress(1);
+    t.kill();
+  }
+
+  function render(i, s, how) {
+    settle();
+    const S = slides[i], P = cur >= 0 ? slides[cur] : null;
+    const slideChanged = i !== cur;
+    const t = gsap.timeline({ onComplete: () => { if (tl === t) tl = null; } });
+    tl = t;
+    if (slideChanged) {
+      let base = 0;
+      if (P) {
+        base = REDUCE ? 0.2 : 0.32;
+        // La slide sortante glisse dans le sens de la marche.
+        t.to(P.el, {
+          opacity: 0, y: REDUCE ? 0 : (how === 'prev' ? 28 : -28), duration: base, ease: 'power2.in',
+          onComplete: () => { P.el.classList.remove('is-active'); gsap.set(P.el, { y: 0 }); }
+        }, 0);
+      }
+      S.el.classList.add('is-active');
+      gsap.set(S.el, { opacity: 0, y: 0 });
+      if (s === 0 && how !== 'prev') {
+        S.frags.forEach(hide);
+        t.set(S.el, { opacity: 1 }, base);
+        playStep(S, 0, t, base + 0.04, how === 'jump');
+      } else {
+        setState(S, s);
+        t.to(S.el, { opacity: 1, duration: 0.45, ease: 'power2.out' }, base);
+      }
+    } else if (s === step + 1) {
+      playStep(S, s, t, 0);
+    } else if (s > step) {
+      setState(S, s);
+    } else if (s < step) {
+      rewind(S, step, s, t);
+    }
+    const moduleChanged = !P || P.mod !== S.mod;
+    cur = i;
+    step = s;
+    moveFil(S, s, how);
+    if (slideChanged) {
+      threads.level(levelFor(S));
+      if (S.el.classList.contains('s-cover')) {
+        threads.intro(!introPlayed || how === 'next');
+        introPlayed = true;
+      } else if (P && moduleChanged) {
+        threads.reweave();
+      }
+    }
+    chrome(S, moduleChanged);
+  }
+
+  function chrome(S, moduleChanged) {
+    const f = S.foot != null ? S.foot : S.mod.foot;
+    const left = f === 'none' ? '' : f;
+    const right = f === 'none' ? '' : pad(S.i + 1);
+    if (footL.textContent !== left || footR.textContent !== right) {
+      gsap.killTweensOf(foot);
+      gsap.to(foot, {
+        opacity: 0, duration: 0.18,
+        onComplete: () => {
+          footL.textContent = left;
+          footR.textContent = right;
+          gsap.to(foot, { opacity: left ? 1 : 0, duration: 0.4 });
+        }
+      });
+    }
+    if (moduleChanged) {
+      const [hx, hy] = S.mod.halo;
+      gsap.to(halo, { x: hx - 900, y: hy - 900, duration: REDUCE || cur < 0 ? 0 : 2.8, ease: 'power2.inOut' });
+    }
+    try { history.replaceState(null, '', '#/' + (S.i + 1) + (step ? '/' + step : '')); } catch (e) { /* file:// dans certains navigateurs */ }
+    if (PRESENTER) paintPresenter();
+    if (ov && !ov.hidden) markOverview();
+  }
+
+  // Horodatage du dernier changement : entre les deux fenêtres, la plus récente fait foi.
+  let stateTs = 0;
+
+  function go(i, s, how, remoteTs) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    s = Math.max(0, Math.min(slides[i].max, s));
+    if (i === cur && s === step) return;
+    render(i, s, how);
+    stateTs = remoteTs || Date.now();
+    if (!remoteTs) send({ t: 'state', i, s, ts: stateTs });
+    if (PRESENTER && how === 'next') autoStartTimer();
+  }
+
+  function next() {
+    const S = slides[cur];
+    if (step < S.max) go(cur, step + 1, 'next');
+    else if (cur < slides.length - 1) go(cur + 1, 0, 'next');
+  }
+
+  function prev() {
+    if (step > 0) go(cur, step - 1, 'prev');
+    else if (cur > 0) go(cur - 1, slides[cur - 1].max, 'prev');
+  }
+
+  function applyRemote(i, s, ts) {
+    let how = 'jump';
+    if (i === cur && Math.abs(s - step) === 1) how = s > step ? 'next' : 'prev';
+    else if (i === cur + 1 && s === 0) how = 'next';
+    else if (i === cur - 1 && slides[i] && s === slides[i].max) how = 'prev';
+    go(i, s, how, ts || Date.now());
+  }
+
+  /* ---------- Fenêtre projection <-> fenêtre présentateur ---------- */
+  let peer = PRESENTER ? window.opener : null;
+
+  function send(msg) {
+    if (!peer || peer.closed) return;
+    try { peer.postMessage({ app: APP, ...msg }, '*'); } catch (e) { /* fenêtre fermée entre-temps */ }
+  }
+
+  addEventListener('message', e => {
+    const d = e.data;
+    if (!d || d.app !== APP) return;
+    if (PRESENTER) { if (e.source !== window.opener) return; }
+    else peer = e.source;
+    switch (d.t) {
+      case 'hello': send({ t: 'state', i: cur, s: step, ts: stateTs }); send({ t: 'black', on: black }); break;
+      case 'state': if (!d.ts || d.ts >= stateTs) applyRemote(d.i, d.s, d.ts); break;
+      // Rattrapage toutes les deux secondes, au cas où un message se serait perdu.
+      case 'ping':
+        if (d.ts > stateTs) applyRemote(d.i, d.s, d.ts);
+        else if (d.ts < stateTs) send({ t: 'state', i: cur, s: step, ts: stateTs });
+        break;
+      case 'black': setBlack(d.on, true); break;
+    }
+  });
+
+  function openPresenter() {
+    if (PRESENTER) return;
+    if (peer && !peer.closed) { peer.focus(); return; }
+    const url = location.href.split('#')[0].split('?')[0] + '?presenter' + location.hash;
+    const w = window.open(url, 'super-sunday-notes', 'popup=yes,width=1360,height=860');
+    if (w) peer = w;
+    else toast('Le navigateur a bloqué la fenêtre de notes : autorise les fenêtres pop-up pour ce fichier.');
+  }
+
+  /* ---------- Écran noir, plein écran, aides ---------- */
+  let black = false;
+  function setBlack(on, remote) {
+    black = !!on;
+    if (PRESENTER) { pvBlack.hidden = !black; }
+    else gsap.to(blackout, { opacity: black ? 1 : 0, duration: REDUCE ? 0 : 0.35 });
+    if (!remote) send({ t: 'black', on: black });
+  }
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else document.documentElement.requestFullscreen().catch(() => toast('Plein écran refusé par le navigateur.'));
+  }
+
+  let toastTimer = 0;
+  function toast(text) {
+    let el = $('.toast');
+    if (!el) { el = document.createElement('p'); el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+    el.textContent = text;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 4200);
+  }
+
+  /* ---------- Sommaire navigable : miniatures par partie, un clic pour y aller ---------- */
+  let ov = null;
+  const jumpTo = i => { toggleOverview(false); go(i, 0, 'jump'); };
+
+  function buildOverview() {
+    ov = document.createElement('div');
+    ov.className = 'ov';
+    ov.hidden = true;
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.setAttribute('aria-label', 'Sommaire : aller à une slide');
+    const head = document.createElement('div');
+    head.className = 'ov-head';
+    head.innerHTML = '<div><p>Sommaire</p><span>Clique sur une slide pour y aller, ou sur le nom d’une partie pour revenir à son début.</span></div>' +
+      '<button type="button" class="ov-close">Fermer <kbd>Échap</kbd></button>';
+    $('.ov-close', head).addEventListener('click', () => toggleOverview(false));
+    ov.append(head);
+    let part = 0;
+    modules.forEach(m => {
+      const own = slides.filter(S => S.mod === m);
+      if (!own.length) return;
+      const sec = document.createElement('section');
+      sec.className = 'ov-sec';
+      const h = document.createElement('button');
+      h.type = 'button';
+      h.className = 'ov-part';
+      const nb = document.createElement('b');
+      nb.textContent = m.minutes ? pad(++part) : '';
+      const nm = document.createElement('span');
+      nm.textContent = m.name;
+      const who = document.createElement('em');
+      who.textContent = m.speaker + (m.minutes ? ' · ' + m.minutes + ' min' : '');
+      h.append(nb, nm, who);
+      h.addEventListener('click', () => jumpTo(own[0].i));
+      const grid = document.createElement('div');
+      grid.className = 'ov-grid';
+      own.forEach(S => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ov-item';
+        b.dataset.i = S.i;
+        const th = document.createElement('span');
+        th.className = 'ov-thumb';
+        th.append(thumbs[S.i]);
+        const cap = document.createElement('span');
+        cap.className = 'ov-cap';
+        const n = document.createElement('span');
+        n.className = 'ov-n';
+        n.textContent = pad(S.i + 1);
+        cap.append(n, document.createTextNode(S.title));
+        b.append(th, cap);
+        b.addEventListener('click', () => jumpTo(S.i));
+        grid.append(b);
+      });
+      sec.append(h, grid);
+      ov.append(sec);
+    });
+    document.body.append(ov);
+    if ('ResizeObserver' in window) new ResizeObserver(scaleThumbs).observe(ov);
+  }
+
+  // Les miniatures sont des slides 1920 x 1080 réduites à la largeur de leur case.
+  function scaleThumbs() {
+    const t = ov && $('.ov-thumb', ov);
+    if (t && t.clientWidth) ov.style.setProperty('--ts', t.clientWidth / 1920);
+  }
+  function markOverview() {
+    $$('.ov-item', ov).forEach(b => b.setAttribute('aria-current', Number(b.dataset.i) === cur ? 'true' : 'false'));
+  }
+  function toggleOverview(open) {
+    ov.hidden = !open;
+    if (!open) return;
+    markOverview();
+    scaleThumbs();
+    const c = $('.ov-item[aria-current="true"]', ov);
+    if (c) { c.focus({ preventScroll: true }); c.scrollIntoView({ block: 'center' }); }
+    if (!REDUCE) gsap.fromTo($$('.ov-part, .ov-item', ov), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', stagger: 0.008 });
+  }
+
+  let help = null;
+  function buildHelp() {
+    help = document.createElement('div');
+    help.className = 'help';
+    help.hidden = true;
+    help.setAttribute('role', 'dialog');
+    help.setAttribute('aria-label', 'Raccourcis clavier');
+    help.innerHTML = '<div class="help-head"><p>Raccourcis</p><button type="button" class="ov-close">Fermer <kbd>Échap</kbd></button></div>' +
+      '<dl>' +
+      '<dt><kbd>→</kbd> <kbd>Espace</kbd> <kbd>Page ↓</kbd></dt><dd>Clic suivant (télécommande comprise)</dd>' +
+      '<dt><kbd>←</kbd> <kbd>Page ↑</kbd></dt><dd>Revenir d’un clic</dd>' +
+      '<dt><kbd>P</kbd></dt><dd>Ouvrir la fenêtre de notes présentateur</dd>' +
+      '<dt><kbd>F</kbd></dt><dd>Plein écran</dd>' +
+      '<dt><kbd>S</kbd></dt><dd>Sommaire : aller à n’importe quelle slide (aussi depuis la fenêtre de notes)</dd>' +
+      '<dt><kbd>B</kbd> <kbd>.</kbd></dt><dd>Écran noir</dd>' +
+      '<dt><kbd>Début</kbd> <kbd>Fin</kbd></dt><dd>Première ou dernière slide</dd>' +
+      '<dt><kbd>T</kbd> <kbd>+</kbd> <kbd>−</kbd></dt><dd>Dans les notes : chrono, taille du texte</dd>' +
+      '</dl>';
+    $('.ov-close', help).addEventListener('click', () => toggleHelp(false));
+    document.body.append(help);
+  }
+  const toggleHelp = open => { help.hidden = !open; };
+
+  function buildControls() {
+    const c = document.createElement('div');
+    c.className = 'ctrl';
+    c.innerHTML =
+      '<button type="button" class="ctrl-toc"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="7" height="6" rx="1"/><rect x="13.5" y="4.5" width="7" height="6" rx="1"/><rect x="3.5" y="13.5" width="7" height="6" rx="1"/><rect x="13.5" y="13.5" width="7" height="6" rx="1"/></svg>Sommaire</button>' +
+      '<button type="button" aria-label="Clic précédent"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+      '<button type="button" aria-label="Clic suivant"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>';
+    const [bToc, bPrev, bNext] = $$('button', c);
+    bToc.addEventListener('click', () => toggleOverview(true));
+    bPrev.addEventListener('click', prev);
+    bNext.addEventListener('click', next);
+    document.body.append(c);
+    let idle = 0;
+    addEventListener('mousemove', () => {
+      c.classList.add('is-on');
+      clearTimeout(idle);
+      idle = setTimeout(() => c.classList.remove('is-on'), 2200);
+    }, { passive: true });
+  }
+
+  /* ---------- Vue présentateur ---------- */
+  let pvMod, pvPos, pvBlack, pvLink, pvClock, pvNext, pvNotes, tTotal, tSec, tTarget, tBox, tBar, bTimer, bReset;
+  let notesFor = -1;
+  const T = { run: false, total: 0, per: {}, last: performance.now() };
+
+  function buildPresenter() {
+    document.body.classList.add('is-presenter');
+    document.title = 'Notes · ' + document.title;
+    const pv = document.createElement('div');
+    pv.className = 'pv';
+    pv.innerHTML =
+      '<header class="pv-top"><p class="pv-mod"></p><p class="pv-pos"></p>' +
+      '<p class="pv-flag pv-black" hidden>Écran noir</p><p class="pv-flag pv-link" hidden>Projection non reliée</p>' +
+      '<p class="pv-clock"></p></header>' +
+      '<div class="pv-left"><div class="pv-stage"></div>' +
+      '<div class="pv-next"><span>Ensuite</span><p></p></div>' +
+      '<div class="pv-timers"><div class="pv-t"><span>Total</span><b data-t="total">00:00</b></div>' +
+      '<div class="pv-t" data-t="box"><span>Section</span><b data-t="sec">00:00</b><em data-t="target"></em><div class="pv-bar"><i></i></div></div></div>' +
+      '<div class="pv-btns">' +
+      '<button type="button" data-act="toc">Sommaire</button>' +
+      '<button type="button" data-act="prev">Précédent</button>' +
+      '<button type="button" data-act="next" class="is-main">Suivant</button>' +
+      '<button type="button" data-act="timer">Démarrer</button>' +
+      '<button type="button" data-act="reset">Remettre à zéro</button>' +
+      '<button type="button" data-act="smaller" aria-label="Réduire le texte des notes">A−</button>' +
+      '<button type="button" data-act="bigger" aria-label="Agrandir le texte des notes">A+</button>' +
+      '</div></div>' +
+      '<section class="pv-notes" aria-label="Notes de l’orateur"></section>';
+    document.body.append(pv);
+    $('.pv-stage', pv).append(viewport);
+    pvMod = $('.pv-mod', pv); pvPos = $('.pv-pos', pv); pvBlack = $('.pv-black', pv); pvLink = $('.pv-link', pv);
+    pvClock = $('.pv-clock', pv); pvNext = $('.pv-next p', pv); pvNotes = $('.pv-notes', pv);
+    tTotal = $('[data-t="total"]', pv); tSec = $('[data-t="sec"]', pv); tTarget = $('[data-t="target"]', pv);
+    tBox = $('[data-t="box"]', pv); tBar = $('.pv-bar i', pv);
+    bTimer = $('[data-act="timer"]', pv); bReset = $('[data-act="reset"]', pv);
+
+    let armed = 0;
+    pv.addEventListener('click', e => {
+      const b = e.target.closest('button[data-act]');
+      if (!b) return;
+      switch (b.dataset.act) {
+        case 'toc': toggleOverview(true); break;
+        case 'prev': prev(); break;
+        case 'next': next(); break;
+        case 'timer': toggleTimer(); break;
+        case 'reset':
+          // Deux clics pour éviter d'effacer le chrono par erreur pendant l'intervention.
+          if (!armed) {
+            b.classList.add('is-armed'); b.textContent = 'Confirmer ?';
+            armed = setTimeout(() => { armed = 0; b.classList.remove('is-armed'); b.textContent = 'Remettre à zéro'; }, 3000);
+          } else {
+            clearTimeout(armed); armed = 0;
+            b.classList.remove('is-armed'); b.textContent = 'Remettre à zéro';
+            T.run = false; T.total = 0; T.per = {};
+            paintTimers();
+          }
+          break;
+        case 'smaller': noteSize(-2); break;
+        case 'bigger': noteSize(2); break;
+      }
+    });
+
+    let nf = 26;
+    try { nf = num(localStorage.getItem('ssl-notes-size'), 26); } catch (e) { /* stockage indisponible */ }
+    pvNotes.style.setProperty('--nf', nf + 'px');
+
+    setInterval(tick, 250);
+    send({ t: 'hello' });
+    setInterval(() => send({ t: 'ping', i: cur, s: step, ts: stateTs }), 2000);
+  }
+
+  function noteSize(delta) {
+    const v = Math.max(16, Math.min(44, (parseFloat(pvNotes.style.getPropertyValue('--nf')) || 26) + delta));
+    pvNotes.style.setProperty('--nf', v + 'px');
+    try { localStorage.setItem('ssl-notes-size', String(v)); } catch (e) { /* stockage indisponible */ }
+  }
+
+  const fmt = ms => { const s = Math.floor(ms / 1000); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); };
+
+  function toggleTimer() { T.run = !T.run; T.last = performance.now(); paintTimers(); }
+  function autoStartTimer() { if (!T.run && T.total === 0) { T.run = true; T.last = performance.now(); } }
+
+  function tick() {
+    const now = performance.now(), dt = now - T.last;
+    T.last = now;
+    if (T.run && cur >= 0) {
+      T.total += dt;
+      const k = slides[cur].mod.key;
+      T.per[k] = (T.per[k] || 0) + dt;
+    }
+    paintTimers();
+    pvClock.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    pvLink.hidden = !!(window.opener && !window.opener.closed);
+  }
+
+  function paintTimers() {
+    if (cur < 0) return;
+    const m = slides[cur].mod, e = T.per[m.key] || 0;
+    tTotal.textContent = fmt(T.total);
+    tSec.textContent = fmt(e);
+    tTarget.textContent = m.minutes ? '/ ' + fmt(m.minutes * 60000) : '';
+    const r = m.minutes ? e / (m.minutes * 60000) : 0;
+    tBar.style.transform = 'scaleX(' + Math.min(1, r) + ')';
+    tBox.classList.toggle('is-warn', r >= 0.85 && r < 1);
+    tBox.classList.toggle('is-over', r >= 1);
+    bTimer.textContent = T.run ? 'Pause' : (T.total ? 'Reprendre' : 'Démarrer');
+  }
+
+  function nextHint(S) {
+    if (step < S.max) {
+      const txt = S.frags.filter(f => f.step === step + 1).map(f => clean(f.el.textContent)).find(Boolean) || '';
+      const short = txt.length > 96 ? txt.slice(0, 94) + '…' : txt;
+      return 'Clic ' + (step + 1) + ' / ' + S.max + (short ? ' : ' + short : '');
+    }
+    const N = slides[S.i + 1];
+    if (!N) return 'Fin de la présentation.';
+    return (N.mod !== S.mod ? N.mod.speaker + ' · ' + N.mod.name + ' : ' : 'Slide suivante : ') + N.title;
+  }
+
+  function paintPresenter() {
+    const S = slides[cur];
+    pvMod.textContent = S.mod.speaker + ' · ' + S.mod.name;
+    pvPos.textContent = 'Slide ' + (S.i + 1) + ' / ' + slides.length + (S.max ? ' · clic ' + step + ' / ' + S.max : '');
+    if (notesFor !== S.i) {
+      const src = $('.notes', S.el);
+      pvNotes.innerHTML = src ? src.innerHTML : '<p class="n-empty">Pas de notes pour cette slide.</p>';
+      pvNotes.scrollTop = 0;
+      notesFor = S.i;
+    }
+    let target = null;
+    $$('p:not(.n-meta)', pvNotes).forEach(p => {
+      const k = num(p.dataset.step, 0);
+      p.classList.toggle('is-now', k === step);
+      p.classList.toggle('is-past', k < step);
+      if (k === step && p.dataset.step != null && !target) target = p;
+    });
+    pvNotes.scrollTo({ top: target ? Math.max(0, target.offsetTop - 24) : 0, behavior: REDUCE ? 'auto' : 'smooth' });
+    pvNext.textContent = nextHint(S);
+    paintTimers();
+  }
+
+  /* ---------- Clavier ---------- */
+  addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey || cur < 0) return;
+    const k = e.key;
+    if (!help.hidden) { if (k === 'Escape' || k === '?' || k === 'h' || k === 'H') { e.preventDefault(); toggleHelp(false); } return; }
+    if (!ov.hidden) { if (k === 'Escape' || k === 's' || k === 'S' || k === 'g' || k === 'G') { e.preventDefault(); toggleOverview(false); } return; }
+    const onButton = e.target instanceof HTMLButtonElement;
+    switch (k) {
+      case ' ': case 'Enter': if (onButton) return; e.preventDefault(); next(); break;
+      case 'ArrowRight': case 'ArrowDown': case 'PageDown': e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp': e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); go(0, 0, 'jump'); break;
+      case 'End': e.preventDefault(); go(slides.length - 1, 0, 'jump'); break;
+      case 'p': case 'P': openPresenter(); break;
+      case 'f': case 'F': case 'F5': e.preventDefault(); toggleFullscreen(); break;
+      case 's': case 'S': case 'g': case 'G': toggleOverview(true); break;
+      case 'b': case 'B': case '.': setBlack(!black); break;
+      case '?': case 'h': case 'H': toggleHelp(true); break;
+      case 't': case 'T': if (PRESENTER) toggleTimer(); break;
+      case '+': case '=': if (PRESENTER) noteSize(2); break;
+      case '-': if (PRESENTER) noteSize(-2); break;
+    }
+  });
+
+  /* ---------- Mise à l'échelle et démarrage ---------- */
+  function fit() {
+    const w = viewport.clientWidth, h = viewport.clientHeight;
+    if (!w || !h) return;
+    const s = Math.min(w / 1920, h / 1080);
+    stage.style.transform = 'translate(' + (w - 1920 * s) / 2 + 'px,' + (h - 1080 * s) / 2 + 'px) scale(' + s + ')';
+    stageScale = s;
+    threads.resize();
+  }
+
+  function fromHash() {
+    const m = location.hash.match(/^#\/(\d+)(?:\/(\d+))?/);
+    return m ? [Number(m[1]) - 1, Number(m[2] || 0)] : [0, 0];
+  }
+
+  // Slide Sommaire : un clic sur une partie déjà affichée mène à sa première slide.
+  $$('[data-goto]', deck).forEach(el => el.addEventListener('click', () => {
+    if (Number(getComputedStyle(el).opacity) < 0.5) return;
+    const S = slides.find(x => x.mod.key === el.dataset.goto);
+    if (S) go(S.i, 0, 'jump');
+  }));
+
+  // Un onglet masqué gèle les animations : on termine l'état en cours dès que la fenêtre redevient visible.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { threads.pause(); return; }
+    settle();
+    threads.start();
+  });
+  addEventListener('hashchange', () => { const [i, s] = fromHash(); go(i, s, 'jump'); });
+
+  function boot() {
+    slides.forEach(S => S.frags.forEach(hide));
+    gsap.set(fil, { opacity: 0 });
+    buildOverview();
+    buildHelp();
+    if (PRESENTER) buildPresenter();
+    else buildControls();
+    fit();
+    if ('ResizeObserver' in window) new ResizeObserver(fit).observe(viewport);
+    else addEventListener('resize', fit);
+    threads.start();
+    // Le halo dérive lentement pendant toute l'intervention.
+    if (!REDUCE) gsap.to('#halo-wrap', { x: 70, y: -46, duration: 16, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    const [i, s] = fromHash();
+    const i0 = Math.max(0, Math.min(slides.length - 1, i));
+    render(i0, Math.max(0, Math.min(slides[i0].max, s)), 'next');
+    if (!PRESENTER && !location.hash) {
+      const hint = document.createElement('p');
+      hint.className = 'hint';
+      hint.innerHTML = '<kbd>S</kbd> sommaire · <kbd>P</kbd> notes présentateur · <kbd>F</kbd> plein écran · <kbd>?</kbd> aide';
+      document.body.append(hint);
+      gsap.fromTo(hint, { opacity: 0 }, { opacity: 1, duration: 0.5, delay: 0.8 });
+      gsap.to(hint, { opacity: 0, duration: 0.6, delay: 5.5, onComplete: () => hint.remove() });
+    }
+  }
+
+  Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(boot);
+})();
+</script>
+</body>
+</html>
